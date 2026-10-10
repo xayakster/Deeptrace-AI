@@ -15,3 +15,13 @@ Thumbs.db
 # Large Model files (if any)
 models/*.h5
 models/*.keras
+
+# things that is added after the git clone which is git ignored
+.agents
+archive
+uploads
+graphify-out
+planning-with-files/
+.coverage
+scratch_test_assets/
+

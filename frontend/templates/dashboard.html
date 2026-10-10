@@ -2,160 +2,527 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DeepTrace AI | Forensic Lab</title>
+    <title>DeepTrace AI | Tri-Branch Forensic Workstation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body { background: #000 url("{{ url_for('static', filename='images/bg.jpg') }}") no-repeat center center fixed; background-size: cover; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
-        header { height: 60px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; background: rgba(0,0,0,0.9); z-index: 1000; }
-        .logo-small { font-family: 'Orbitron'; font-size: 22px; letter-spacing: 4px; font-weight: bold; }
-        main { display: grid; grid-template-columns: 320px 1fr 380px; grid-template-rows: 1fr 180px; gap: 15px; padding: 15px; flex-grow: 1; height: calc(100vh - 60px); }
-        .panel { background: rgba(0, 0, 0, 0.85); border: 1px solid #00f2ff; padding: 20px; display: flex; flex-direction: column; overflow: hidden;}
-        .panel-header { font-family: 'Orbitron'; font-size: 14px; color: #00f2ff; border-bottom: 1px solid rgba(0, 242, 255, 0.4); padding-bottom: 10px; margin-bottom: 15px; text-transform: uppercase; }
-        .timeline-item { margin-bottom: 15px; padding-left: 15px; border-left: 3px solid #222; }
+        body { background: #000 url("{{ url_for('static', filename='images/bg.jpg') }}") no-repeat center center fixed; background-size: cover; overflow: hidden; display: flex; flex-direction: column; height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        header { height: 60px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; background: rgba(0,0,0,0.92); z-index: 1000; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+        .logo-small { font-family: 'Orbitron', monospace; font-size: 22px; letter-spacing: 4px; font-weight: bold; }
+        main { display: grid; grid-template-columns: 310px 1fr 410px; grid-template-rows: 1fr 170px; gap: 15px; padding: 15px; flex-grow: 1; height: calc(100vh - 60px); box-sizing: border-box; }
+        .panel { background: rgba(5, 10, 15, 0.90); border: 1px solid rgba(0, 242, 255, 0.5); padding: 16px; display: flex; flex-direction: column; overflow: hidden; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .panel-header { font-family: 'Orbitron', monospace; font-size: 13px; color: #00f2ff; border-bottom: 1px solid rgba(0, 242, 255, 0.3); padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center; }
+        .timeline-item { margin-bottom: 12px; padding-left: 12px; border-left: 3px solid #222; transition: 0.3s; }
         .timeline-item.active { border-left-color: #00f2ff; }
-        .upload-bar { height: 50px; border: 1px dashed #00f2ff; display: flex; justify-content: center; align-items: center; cursor: pointer; background: rgba(0,242,255,0.05); font-size: 12px; margin-bottom: 10px; }
-        .comparison-box { flex-grow: 1; display: flex; gap: 10px; justify-content: center; align-items: center; background: #050505; border: 1px solid #222; overflow: hidden; position: relative; }
-        #image-preview, #ela-preview { max-width: 48%; max-height: 350px; border: 1px solid #333; display: none; }
-        .launch-btn { background: linear-gradient(90deg, #00f2ff, #0072ff); border: none; color: white; padding: 15px; font-family: 'Orbitron'; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; letter-spacing: 2px;}
-        .verdict-circle { width: 120px; height: 120px; border: 5px solid #111; border-radius: 50%; margin: 0 auto 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s; }
-        .score-val { font-family: 'Orbitron'; font-size: 28px; font-weight: bold; }
-        .findings-card { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 8px; margin-top: 8px; border-radius: 4px; }
-        .findings-card label { font-size: 10px; color: #00f2ff; display: block; margin-bottom: 2px; }
-        .findings-card p { font-size: 10px; word-break: break-all; color: #ddd; }
-        .progress-bar { width: 100%; height: 6px; background: #111; margin-top: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; width: 0%; background: #00f2ff; transition: 1s; }
-        .logs-container { grid-column: 1 / 4; background: #000; border: 1px solid #00f2ff; color: #00ff00; padding: 15px; font-size: 13px; overflow-y: auto; }
+        .timeline-item small { font-size: 9px; color: #00f2ff; font-family: 'Orbitron', monospace; letter-spacing: 1px; }
+        .timeline-item p { margin: 2px 0 0; font-size: 12px; color: #ccc; }
+        .upload-bar { height: 46px; border: 1px dashed #00f2ff; display: flex; justify-content: center; align-items: center; cursor: pointer; background: rgba(0,242,255,0.04); font-size: 11px; margin-bottom: 8px; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: 0.3s; }
+        .upload-bar:hover { background: rgba(0,242,255,0.12); border-color: #00ffaa; }
+        .comparison-box { flex-grow: 1; display: flex; gap: 12px; justify-content: center; align-items: center; background: #03070b; border: 1px solid #1a2634; overflow: hidden; position: relative; border-radius: 3px; padding: 8px; }
+        .preview-pane { display: flex; flex-direction: column; align-items: center; max-width: 49%; flex: 1; height: 100%; justify-content: center; }
+        .preview-tag { font-family: 'Orbitron', monospace; font-size: 9px; color: #00f2ff; margin-bottom: 4px; letter-spacing: 1px; background: rgba(0,242,255,0.1); padding: 2px 8px; border-radius: 2px; }
+        .preview-pane img { max-width: 100%; max-height: 290px; border: 1px solid #223; object-fit: contain; border-radius: 2px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .view-toggle-bar { display: flex; gap: 6px; margin: 8px 0; }
+        .toggle-btn { flex: 1; background: rgba(0,242,255,0.08); border: 1px solid #00f2ff; color: #00f2ff; font-family: 'Orbitron', monospace; font-size: 9px; padding: 6px 6px; cursor: pointer; transition: 0.2s; letter-spacing: 0.5px; text-align: center; }
+        .toggle-btn.active { background: #00f2ff; color: #000; font-weight: bold; box-shadow: 0 0 10px rgba(0,242,255,0.6); }
+        .cmap-btn { flex: 1; background: rgba(0,242,255,0.06); border: 1px solid rgba(0,242,255,0.3); color: #88a; font-family: 'Orbitron', monospace; font-size: 8px; padding: 3px 6px; cursor: pointer; transition: 0.2s; border-radius: 2px; }
+        .cmap-btn.active { background: rgba(0,242,255,0.25); border-color: #00f2ff; color: #00f2ff; font-weight: bold; box-shadow: 0 0 8px rgba(0,242,255,0.4); }
+        .launch-btn { background: linear-gradient(90deg, #00f2ff, #0072ff); border: none; color: white; padding: 12px; font-family: 'Orbitron', monospace; cursor: pointer; width: 100%; font-weight: bold; margin-top: 8px; letter-spacing: 2px; border-radius: 3px; font-size: 13px; text-shadow: 0 1px 2px #000; }
+        .launch-btn:hover { background: linear-gradient(90deg, #00ffaa, #00a2ff); box-shadow: 0 0 15px rgba(0,255,170,0.5); }
+        .launch-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .verdict-circle { width: 110px; height: 110px; border: 4px solid #1a2634; border-radius: 50%; margin: 0 auto 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s; text-align: center; }
+        .score-val { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: bold; }
+        .verdict-badge { font-family: 'Orbitron', monospace; font-size: 9px; font-weight: bold; letter-spacing: 1px; margin-top: 1px; }
+        .findings-card { background: rgba(255,255,255,0.03); border: 1px solid #1d2c3f; padding: 7px 10px; margin-top: 6px; border-radius: 3px; }
+        .findings-card label { font-size: 9px; color: #00f2ff; display: block; margin-bottom: 2px; font-family: 'Orbitron', monospace; letter-spacing: 1px; }
+        .findings-card p { font-size: 10px; word-break: break-all; color: #ddd; margin: 0; line-height: 1.3; }
+        .meter-container { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+        .meter-label { display: flex; justify-content: space-between; font-size: 9px; font-family: 'Orbitron', monospace; color: #88a; }
+        .progress-bar { width: 100%; height: 5px; background: #111; overflow: hidden; border-radius: 2px; }
+        .progress-fill { height: 100%; width: 0%; background: #00f2ff; transition: 0.8s; }
+        .badges-wrapper { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .hud-badge { font-size: 8px; font-family: 'Orbitron', monospace; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.5px; }
+        .hud-badge.danger { background: rgba(255,46,46,0.15); border: 1px solid #ff2e2e; color: #ff2e2e; }
+        .hud-badge.warning { background: rgba(255,170,0,0.15); border: 1px solid #ffaa00; color: #ffaa00; }
+        .hud-badge.success { background: rgba(0,255,102,0.15); border: 1px solid #00ff66; color: #00ff66; }
+        .hud-badge.info { background: rgba(0,242,255,0.15); border: 1px solid #00f2ff; color: #00f2ff; }
+        .hud-badge.neutral { background: rgba(120,120,120,0.15); border: 1px solid #666; color: #888; }
+        .logs-container { grid-column: 1 / 4; background: #020406; border: 1px solid #00f2ff; color: #00ff66; padding: 12px 18px; font-size: 12px; overflow-y: auto; font-family: 'Courier New', monospace; box-shadow: inset 0 0 10px rgba(0,0,0,0.9); }
     </style>
 </head>
 <body class="scanlines">
     <header>
-        <div class="logo-small">DEEPTRACE <span style="color:#00f2ff">AI</span></div>
-        <div id="clock" style="font-size: 13px; font-weight: bold; color: #00f2ff;">00:00:00</div>
+        <div class="logo-small">DEEPTRACE <span style="color:#00f2ff">AI</span> <span style="font-size:10px; color:#888; letter-spacing:1px">TRI-BRANCH OS v2.5</span></div>
+        <div id="clock" style="font-size: 13px; font-weight: bold; color: #00f2ff; font-family:'Orbitron', monospace;">00:00:00</div>
     </header>
     <main>
+        <!-- LEFT PANEL: FORENSIC PIPELINE PHASES -->
         <section class="panel">
-            <div class="panel-header">Evidence Timeline</div>
-            <div class="timeline-item active" id="step-1"><small>PHASE 01</small><p>Evidence Received</p></div>
-            <div class="timeline-item" id="step-2"><small>PHASE 02</small><p>Hash Integrity</p></div>
-            <div class="timeline-item" id="step-3"><small>PHASE 03</small><p>Metadata Scan</p></div>
-            <div class="timeline-item" id="step-4"><small>PHASE 04</small><p>ELA Analysis</p></div>
+            <div class="panel-header">Pipeline Status</div>
+            <div class="timeline-item active" id="step-1"><small>PHASE 01</small><p>Evidence Ingestion & Hashes</p></div>
+            <div class="timeline-item" id="step-2"><small>PHASE 02</small><p>C2PA Provenance & EXIF</p></div>
+            <div class="timeline-item" id="step-3"><small>PHASE 03</small><p>2D-FFT Spectral Screening</p></div>
+            <div class="timeline-item" id="step-4"><small>PHASE 04</small><p>Spatial ELA & Tamper Masking</p></div>
+            <div class="timeline-item" id="step-5"><small>PHASE 05</small><p>Multi-Signal Arbitrator</p></div>
+
+            <div style="margin-top:auto; padding:8px; background:rgba(0,242,255,0.03); border:1px solid #1a2c3a; border-radius:3px;">
+                <small style="font-size:8px; color:#00f2ff; font-family:'Orbitron', monospace;">ARCHITECTURAL ENGINES</small>
+                <div style="font-size:9px; color:#aaa; margin-top:4px; line-height:1.4;">
+                    • Branch 1: C2PA & SHA-256<br>
+                    • Branch 2: 2D-FFT & Noise Void<br>
+                    • Branch 3: Spatial Z & Jet Heatmap
+                </div>
+            </div>
         </section>
 
+        <!-- CENTER PANEL: WORKSPACE & DUAL VISUALIZATION -->
         <section class="panel">
-            <div class="panel-header">Forensic Workspace</div>
-            <div class="upload-bar" onclick="document.getElementById('file-input').click()" id="upload-text">📁 CLICK TO UPLOAD DIGITAL EVIDENCE</div>
-            <div class="comparison-box"><img id="image-preview"><img id="ela-preview"></div>
-            <div style="display:flex; align-items:center; gap:10px; padding:10px 0;">
-                <small style="font-size:10px; color:#00f2ff">ELA SENSITIVITY</small>
-                <input type="range" id="ela-quality" min="50" max="98" value="90" style="flex-grow:1" onchange="runInvestigation()">
+            <div class="panel-header">
+                <span>Forensic Workspace</span>
+                <span id="canvas-status" style="font-size:10px; color:#888;">READY</span>
             </div>
-            <input type="file" id="file-input" hidden accept="image/*">
-            <button class="launch-btn" onclick="runInvestigation()">🚀 START INVESTIGATION</button>
-        </section>
-
-        <section class="panel" style="overflow-y:auto;">
-            <div class="panel-header">Forensic Findings</div>
-            <div class="verdict-circle" id="verdict-ui">
-                <small style="font-size:9px">VERDICT</small>
-                <div class="score-val" id="score-text">--%</div>
-            </div>
-            <div class="findings-card"><label>MD5 HASH</label><p id="res-md5">Waiting...</p></div>
-            <!-- ADDED SHA-256 DISPLAY -->
-            <div class="findings-card"><label>SHA-256 HASH</label><p id="res-sha">Waiting...</p></div>
-            <div class="findings-card"><label>METADATA</label><p id="res-meta">Waiting...</p></div>
             
-            <div class="findings-card" style="border-color:#ff2e2e; background:rgba(255,46,46,0.05);">
-                <label style="color:#ff2e2e; font-weight:bold;">WEB INTELLIGENCE</label>
-                <button id="tineye-btn" onclick="window.open(this.dataset.url, '_blank')" style="display:none; width:100%; background:transparent; border:1px solid #00f2ff; color:#00f2ff; font-family:'Orbitron'; font-size:9px; padding:5px; margin-top:5px; cursor:pointer;">SEARCH TINEYE</button>
-                <button id="google-btn" onclick="window.open('https://lens.google.com/upload', '_blank')" style="display:none; width:100%; background:transparent; border:1px solid #00f2ff; color:#00f2ff; font-family:'Orbitron'; font-size:9px; padding:5px; margin-top:5px; cursor:pointer;">GOOGLE LENS</button>
+            <div class="upload-bar" onclick="document.getElementById('file-input').click()" id="upload-text">
+                📁 CLICK TO UPLOAD DIGITAL EVIDENCE (JPG, PNG, WEBP)
             </div>
 
-            <div style="margin-top:10px">
-                <small style="font-size:10px; color:#00f2ff">MANIPULATION SCORE</small>
-                <div class="progress-bar"><div class="progress-fill" id="bar-ai"></div></div>
+            <div class="view-toggle-bar">
+                <button class="toggle-btn active" id="btn-toggle-ela" onclick="switchForensicView('ela')">🔍 ELA DIFFERENCE</button>
+                <button class="toggle-btn" id="btn-toggle-heatmap" onclick="switchForensicView('heatmap')">🔥 TAMPER HEATMAP</button>
+                <button class="toggle-btn" id="btn-toggle-ai" onclick="switchForensicView('ai')">🧠 AI ATTRIBUTION</button>
             </div>
-            <button class="launch-btn" style="background:#222; border:1px solid #7000ff; margin-top:15px" onclick="generatePDF()">📄 GENERATE REPORT</button>
+
+            <div class="comparison-box">
+                <div class="preview-pane">
+                    <span class="preview-tag">SOURCE EVIDENCE</span>
+                    <img id="image-preview" style="display:none;" alt="Source Evidence">
+                </div>
+                <div class="preview-pane">
+                    <span class="preview-tag" id="view-mode-tag">FORENSIC ANALYSIS MATRIX</span>
+                    <img id="ela-preview" style="display:none;" alt="Forensic Visualization">
+                </div>
+            </div>
+
+            <!-- FORENSIC HEATMAP INTERACTIVE CONTROLS -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:6px; background:rgba(0,242,255,0.02); border:1px solid #142230; padding:6px 8px; border-radius:3px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <small style="font-size:8px; color:#00f2ff; font-family:'Orbitron', monospace; white-space:nowrap;">ELA SENSITIVITY</small>
+                    <input type="range" id="ela-quality" min="50" max="98" value="90" style="flex-grow:1" onchange="runInvestigation()">
+                    <span id="ela-quality-label" style="font-size:9px; color:#00f2ff; font-family:'Orbitron', monospace; width:24px;">90%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <small style="font-size:8px; color:#00f2ff; font-family:'Orbitron', monospace; white-space:nowrap;">ALPHA OPACITY</small>
+                    <input type="range" id="heatmap-opacity" min="10" max="90" value="45" style="flex-grow:1" oninput="updateOpacityLabel(this.value)" onchange="runInvestigation()">
+                    <span id="opacity-label" style="font-size:9px; color:#00f2ff; font-family:'Orbitron', monospace; width:24px;">45%</span>
+                </div>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px;">
+                <div style="display:flex; align-items:center; gap:6px; flex:1;">
+                    <small style="font-size:8px; color:#00f2ff; font-family:'Orbitron', monospace;">PALETTE:</small>
+                    <div style="display:flex; gap:4px; flex-grow:1;">
+                        <button class="cmap-btn active" id="btn-cmap-jet" onclick="switchColormap('JET')">JET (STD)</button>
+                        <button class="cmap-btn" id="btn-cmap-turbo" onclick="switchColormap('TURBO')">TURBO (SMOOTH)</button>
+                    </div>
+                </div>
+                <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; font-size:7px; font-family:'Orbitron', monospace; color:#779; margin-bottom:1px;">
+                        <span>0.0 BASELINE</span>
+                        <span>0.5 ELEVATED</span>
+                        <span>1.0 OUTLIER</span>
+                    </div>
+                    <div id="scientific-colorbar" style="height:4px; width:100%; border-radius:2px; background: linear-gradient(to right, #00008f, #0000ff, #00ffff, #ffff00, #ff0000, #800000);"></div>
+                </div>
+            </div>
+
+            <!-- EVIDENTIARY DISCLAIMER / INTERPRETATION BANNER -->
+            <div id="forensic-disclaimer-banner" style="font-size:9px; color:#88a; font-family:'Segoe UI', sans-serif; line-height:1.2; margin-top:5px; border-left: 2px solid #00f2ff; padding-left: 6px; background:rgba(0,242,255,0.03); padding-top:2px; padding-bottom:2px;">
+                <span id="disclaimer-text">MODE: Error Level Analysis. Intensity represents JPEG compression residual difference.</span>
+            </div>
+
+            <input type="file" id="file-input" hidden accept="image/*">
+            <button class="launch-btn" id="start-btn" onclick="runInvestigation()">🚀 EXECUTE TRI-BRANCH ANALYSIS</button>
+        </section>
+
+        <!-- RIGHT PANEL: FORENSIC TELEMETRY & FINDINGS -->
+        <section class="panel" style="overflow-y:auto;">
+            <div class="panel-header">
+                <span>Forensic Findings</span>
+                <span id="detection-pill" style="font-size:9px; color:#00f2ff; font-weight:normal;">--</span>
+            </div>
+
+            <div class="verdict-circle" id="verdict-ui">
+                <small style="font-size:8px; letter-spacing:1px; color:#888;">SUSPICION</small>
+                <div class="score-val" id="score-text">--%</div>
+                <div class="verdict-badge" id="verdict-badge">IDLE</div>
+            </div>
+
+            <div class="badges-wrapper" id="badges-container"></div>
+            
+            <div class="findings-card" id="summary-card" style="display:none; border-color:#00f2ff;">
+                <label>SCIENTIFIC INTERPRETATION</label>
+                <p id="res-summary" style="color:#00f2ff; font-size:10px; line-height:1.4;">--</p>
+            </div>
+
+            <!-- CONFORMAL UNCERTAINTY GUARANTEE -->
+            <div class="findings-card" id="conformal-card" style="display:none; border-color:#00ff66; background:rgba(0,255,102,0.03);">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>CONFORMAL PREDICTION (95% GUARANTEE)</span>
+                    <span id="conformal-cov" style="color:#00ff66; font-size:9px;">95.0% COVERAGE</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+                    <span id="conformal-set-badge" style="font-family:'Orbitron', monospace; font-size:9.5px; padding:3px 7px; border-radius:3px; background:rgba(0,255,102,0.15); border:1px solid #00ff66; color:#00ff66;">--</span>
+                    <span id="conformal-size-badge" style="font-size:8.5px; color:#888;">--</span>
+                </div>
+                <p id="conformal-desc" style="font-size:9px; line-height:1.35; color:#ccc; margin-top:3px;">--</p>
+            </div>
+
+            <!-- DUAL SUB-INDEX METERS -->
+            <div class="meter-container">
+                <div class="meter-label"><span>AI SYNTHESIS INDEX</span><span id="meter-ai-val">--%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="meter-ai-fill" style="background:#ff2e2e;"></div></div>
+
+                <div class="meter-label" style="margin-top:4px;"><span>TAMPERING INDEX</span><span id="meter-tamper-val">--%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="meter-tamper-fill" style="background:#00f2ff;"></div></div>
+            </div>
+
+            <!-- PROVENANCE CARD -->
+            <div class="findings-card">
+                <label>C2PA CONTENT CREDENTIALS</label>
+                <p id="res-c2pa">Scanning asset...</p>
+            </div>
+
+            <!-- HASH & PERCEPTUAL FINGERPRINT -->
+            <div class="findings-card">
+                <label>CRYPTOGRAPHIC CHAIN OF CUSTODY</label>
+                <p id="res-hashes" style="font-family:'Courier New', monospace; font-size:9px;">MD5: --<br>SHA256: --<br>dHash: --</p>
+            </div>
+
+            <!-- PHYSICAL & EXPLAINABILITY TELEMETRY -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <div class="findings-card"><label>SPATIAL Z-SCORE</label><p id="res-zscore">--</p></div>
+                <div class="findings-card"><label>LAPLACIAN NOISE</label><p id="res-lap">--</p></div>
+                <div class="findings-card"><label>SPECTRAL PEAK</label><p id="res-spectral">--</p></div>
+                <div class="findings-card"><label>TAMPER COVERAGE</label><p id="res-coverage">--</p></div>
+                <div class="findings-card"><label>NPR COVARIANCE</label><p id="res-npr">--</p></div>
+                <div class="findings-card"><label>TEXTURE RELIABILITY</label><p id="res-reliability">--</p></div>
+                <div class="findings-card"><label>AI ATTR PEAK</label><p id="res-attr-peak">--</p></div>
+                <div class="findings-card"><label>AI ATTR AREA</label><p id="res-attr-coverage">--</p></div>
+            </div>
+            
+            <div class="findings-card" style="border-color:#ff2e2e; background:rgba(255,46,46,0.04);">
+                <label style="color:#ff2e2e; font-weight:bold;">WEB REVERSE SEARCH</label>
+                <div style="display:flex; gap:6px; margin-top:4px;">
+                    <button id="tineye-btn" onclick="window.open(this.dataset.url, '_blank')" style="display:none; flex:1; background:transparent; border:1px solid #00f2ff; color:#00f2ff; font-family:'Orbitron', monospace; font-size:9px; padding:4px; cursor:pointer;">TINEYE</button>
+                    <button id="google-btn" onclick="window.open('https://lens.google.com/upload', '_blank')" style="display:none; flex:1; background:transparent; border:1px solid #00f2ff; color:#00f2ff; font-family:'Orbitron', monospace; font-size:9px; padding:4px; cursor:pointer;">LENS</button>
+                </div>
+            </div>
+
+            <button class="launch-btn" style="background:rgba(112,0,255,0.25); border:1px solid #7000ff; margin-top:10px" onclick="generatePDF()">📄 EXPORT FORENSIC DOSSIER</button>
         </section>
         
-        <section class="logs-container" id="logs">[SYSTEM] Forensic OS Ready.</section>
+        <!-- BOTTOM PANEL: SYSTEM LOG TERMINAL -->
+        <section class="logs-container" id="logs">[SYSTEM] DeepTrace AI v2.5 Online. Tri-Branch Forensic Engine initialized.</section>
     </main>
 
     <div class="cursor-dot"></div><div class="cursor-outline"></div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+        let currentAnalysisData = null;
+        let currentViewMode = 'ela'; // 'ela', 'heatmap', or 'ai'
+        let currentColormap = 'JET'; // 'JET' or 'TURBO'
         const fileInput = document.getElementById('file-input');
+        
         fileInput.onchange = e => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = () => { document.getElementById('image-preview').src = reader.result; document.getElementById('image-preview').style.display='block'; }
+                reader.onload = () => { 
+                    document.getElementById('image-preview').src = reader.result; 
+                    document.getElementById('image-preview').style.display = 'block'; 
+                };
                 reader.readAsDataURL(file);
-                document.getElementById('upload-text').innerText = file.name;
+                document.getElementById('upload-text').innerText = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                addLog(`Loaded digital evidence: ${file.name}`);
             }
         };
 
+        document.getElementById('ela-quality').oninput = e => {
+            document.getElementById('ela-quality-label').innerText = e.target.value + '%';
+        };
+
+        function updateOpacityLabel(val) {
+            document.getElementById('opacity-label').innerText = val + '%';
+        }
+
+        function switchColormap(cmap) {
+            currentColormap = cmap;
+            const btnJet = document.getElementById('btn-cmap-jet');
+            const btnTurbo = document.getElementById('btn-cmap-turbo');
+            const colorbar = document.getElementById('scientific-colorbar');
+
+            if (cmap === 'TURBO') {
+                btnTurbo.classList.add('active');
+                btnJet.classList.remove('active');
+                colorbar.style.background = "linear-gradient(to right, #30123b, #4662d8, #1ae4b6, #a2fc3c, #f8ba39, #e23b10, #7a0403)";
+                addLog("Switched false-color colormap to TURBO (perceptually uniform gradient).");
+            } else {
+                btnJet.classList.add('active');
+                btnTurbo.classList.remove('active');
+                colorbar.style.background = "linear-gradient(to right, #00008f, #0000ff, #00ffff, #ffff00, #ff0000, #800000)";
+                addLog("Switched false-color colormap to JET (forensic standard).");
+            }
+
+            if (fileInput.files[0] && currentAnalysisData) {
+                runInvestigation();
+            }
+        }
+
+        function switchForensicView(mode) {
+            currentViewMode = mode;
+            const btnEla = document.getElementById('btn-toggle-ela');
+            const btnHeatmap = document.getElementById('btn-toggle-heatmap');
+            const btnAi = document.getElementById('btn-toggle-ai');
+            const tag = document.getElementById('view-mode-tag');
+            const disclaimer = document.getElementById('disclaimer-text');
+            const preview = document.getElementById('ela-preview');
+
+            btnEla.classList.remove('active');
+            btnHeatmap.classList.remove('active');
+            btnAi.classList.remove('active');
+
+            if (mode === 'ela') {
+                btnEla.classList.add('active');
+                tag.innerText = "ERROR LEVEL ANALYSIS (ELA) VIEW";
+                disclaimer.innerText = "MODE: Error Level Analysis. Intensity represents JPEG compression residual differences across quantization cycles.";
+                if (currentAnalysisData && currentAnalysisData.ela) {
+                    preview.src = "data:image/jpeg;base64," + currentAnalysisData.ela;
+                }
+            } else if (mode === 'heatmap') {
+                btnHeatmap.classList.add('active');
+                tag.innerText = "PHYSICAL TAMPER LOCALIZATION (RESIDUAL Z-SCORES)";
+                disclaimer.innerText = "MODE: Physical Tamper Localization. Highlights block-level compression and noise variance outliers (Z > 3.2). Red areas indicate potential spliced, copied, or inpainted elements.";
+                if (currentAnalysisData && currentAnalysisData.heatmap) {
+                    preview.src = "data:image/jpeg;base64," + currentAnalysisData.heatmap;
+                }
+            } else if (mode === 'ai') {
+                btnAi.classList.add('active');
+                tag.innerText = "AI GENERATION ATTRIBUTION (SYNTHETIC ARTIFACTS)";
+                disclaimer.innerText = "MODE: AI Feature Attribution. Highlights spatial areas driving the synthetic generation classifier. Note: In full-canvas synthetic images, intensity represents model gradient importance, not isolated edits.";
+                if (currentAnalysisData && (currentAnalysisData.ai_heatmap || currentAnalysisData.heatmap)) {
+                    preview.src = "data:image/jpeg;base64," + (currentAnalysisData.ai_heatmap || currentAnalysisData.heatmap);
+                }
+            }
+        }
+
         async function runInvestigation() {
             const file = fileInput.files[0];
-            if (!file) return alert("Select file!");
-            addLog("Executing Forensic Sequence...");
+            if (!file) return alert("Select an image file first!");
+            
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = true;
+            startBtn.innerText = "⏳ EXECUTING TRI-BRANCH ANALYSIS...";
+            document.getElementById('canvas-status').innerText = "PROCESSING";
+            addLog("Initiating Tri-Branch Forensic Analysis Sequence...");
+
+            // Reset phase indicators
+            ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+            document.getElementById('step-1').classList.add('active');
+
             const formData = new FormData();
             formData.append('file', file);
             formData.append('quality', document.getElementById('ela-quality').value);
+            formData.append('alpha', (document.getElementById('heatmap-opacity').value / 100.0).toFixed(2));
+            formData.append('colormap', currentColormap);
+
             try {
                 const res = await fetch('/analyze', { method: 'POST', body: formData });
                 const data = await res.json();
                 
-                // Update Timeline & Hashes
+                if (!res.ok || data.error) {
+                    addLog(`[ERROR] ${data.error || 'Server error'}`);
+                    alert(data.error || 'Forensic analysis failed.');
+                    startBtn.disabled = false;
+                    startBtn.innerText = "🚀 EXECUTE TRI-BRANCH ANALYSIS";
+                    document.getElementById('canvas-status').innerText = "ERROR";
+                    return;
+                }
+
+                currentAnalysisData = data;
+
+                // Step 1 & 2: Provenance & Signatures
                 document.getElementById('step-2').classList.add('active');
-                document.getElementById('res-md5').innerText = data.hashes.md5;
-                document.getElementById('res-sha').innerText = data.hashes.sha256; // Updated SHA Display
-                
+                const p = data.provenance || {};
+                const c2paText = p.has_c2pa ? 
+                    (p.is_ai_claimed ? `⚠️ Verified AI (${p.generator})` : `🛡️ Verified Source (${p.generator})`) : 
+                    "No C2PA manifest found in asset.";
+                document.getElementById('res-c2pa').innerText = c2paText;
+
+                document.getElementById('res-hashes').innerHTML = 
+                    `MD5:    ${data.hashes.md5}<br>SHA256: ${data.hashes.sha256.substring(0, 24)}...<br>dHash:  ${data.hashes.phash || 'N/A'}`;
+                addLog(`Branch 1 (Provenance): Hashes and C2PA credentials evaluated.`);
+
                 setTimeout(() => {
+                    // Step 3: Spectral AI Screening
                     document.getElementById('step-3').classList.add('active');
-                    document.getElementById('res-meta').innerText = data.metadata.Model || "No EXIF found.";
+                    const freq = data.frequency || {};
+                    document.getElementById('res-spectral').innerText = `Peak=${freq.spectral_peak_ratio || 0.0}`;
+                    addLog(`Branch 2 (Spectral AI): 2D-FFT analysis completed (AI Score: ${data.ai_score}%).`);
+
                     setTimeout(() => {
+                        // Step 4: Spatial Tampering & Dual Heatmaps
                         document.getElementById('step-4').classList.add('active');
-                        document.getElementById('ela-preview').src = "data:image/jpeg;base64," + data.ela;
-                        document.getElementById('ela-preview').style.display='block';
-                        
-                        const score = data.score;
-                        document.getElementById('score-text').innerText = score + "%";
-                        document.getElementById('bar-ai').style.width = score + "%";
-                        
-                        const ui = document.getElementById('verdict-ui');
-                        const txt = document.getElementById('score-text');
-                        const color = score > 55 ? "#ff2e2e" : "#00ff00";
-                        ui.style.borderColor = color; ui.style.boxShadow = `0 0 20px ${color}`; txt.style.color = color;
+                        const tamp = data.tamper || {};
+                        const exp = data.explainability || {};
+                        const telem = data.telemetry || {};
 
-                        document.getElementById('tineye-btn').dataset.url = data.tineye;
-                        document.getElementById('tineye-btn').style.display = 'block';
-                        document.getElementById('google-btn').style.display = 'block';
+                        document.getElementById('res-zscore').innerText = `Z=${tamp.spatial_inconsistency}`;
+                        document.getElementById('res-lap').innerText = `σ²=${tamp.laplacian_variance}`;
+                        document.getElementById('res-coverage').innerText = `${tamp.tamper_coverage_ratio}%`;
+                        document.getElementById('res-npr').innerText = `${telem.npr_covariance_score !== undefined ? telem.npr_covariance_score : (data.frequency ? data.frequency.npr_covariance_score : '--')}`;
+                        document.getElementById('res-reliability').innerText = `${telem.reliability_index !== undefined ? telem.reliability_index : (tamp.reliability_index || '1.0')}`;
+                        document.getElementById('res-attr-peak').innerText = `${exp.attribution_peak || 0.0}`;
+                        document.getElementById('res-attr-coverage').innerText = `${exp.high_attribution_ratio || 0.0}%`;
 
-                        addLog("Analysis Synchronized.");
-                    }, 800);
-                }, 800);
-            } catch(e) { addLog("Engine Error."); }
+                        // Render image according to current view mode
+                        const preview = document.getElementById('ela-preview');
+                        if (currentViewMode === 'ai' && data.ai_heatmap) {
+                            preview.src = "data:image/jpeg;base64," + data.ai_heatmap;
+                        } else if (currentViewMode === 'heatmap' && data.heatmap) {
+                            preview.src = "data:image/jpeg;base64," + data.heatmap;
+                        } else {
+                            preview.src = "data:image/jpeg;base64," + data.ela;
+                        }
+                        preview.style.display = 'block';
+                        addLog(`Branch 3 & Explainability: Physical tamper mask & AI attribution generated.`);
+
+                        setTimeout(() => {
+                            // Step 5: Multi-Signal Arbitrator
+                            document.getElementById('step-5').classList.add('active');
+                            const score = data.score;
+                            const color = data.verdict_color || (score <= 35 ? "#00ff66" : (score <= 65 ? "#ffaa00" : "#ff2e2e"));
+
+                            document.getElementById('score-text').innerText = score + "%";
+                            document.getElementById('verdict-badge').innerText = data.verdict_badge || "VERDICT";
+                            document.getElementById('verdict-badge').style.color = color;
+                            document.getElementById('detection-pill').innerText = data.detection_type || "--";
+                            document.getElementById('detection-pill').style.color = color;
+
+                            const ui = document.getElementById('verdict-ui');
+                            const txt = document.getElementById('score-text');
+                            ui.style.borderColor = color;
+                            ui.style.boxShadow = `0 0 20px ${color}`;
+                            txt.style.color = color;
+
+                            // Conformal Prediction Card
+                            const conf = data.conformal_prediction;
+                            if (conf && conf.prediction_set) {
+                                document.getElementById('conformal-card').style.display = 'block';
+                                const confSetBadge = document.getElementById('conformal-set-badge');
+                                confSetBadge.innerText = `[ ${conf.prediction_set.join(' | ')} ]`;
+                                document.getElementById('conformal-size-badge').innerText = conf.is_singleton ? 'SINGLETON (DECISIVE)' : 'MULTI-CLASS SET (AMBIGUOUS)';
+                                document.getElementById('conformal-desc').innerText = conf.explanation || '';
+                                
+                                const confColor = conf.badge_type === 'danger' ? '#ff2e2e' : (conf.badge_type === 'warning' ? '#ffaa00' : '#00ff66');
+                                document.getElementById('conformal-card').style.borderColor = confColor;
+                                confSetBadge.style.borderColor = confColor;
+                                confSetBadge.style.color = confColor;
+                                confSetBadge.style.background = confColor === '#ff2e2e' ? 'rgba(255,46,46,0.15)' : (confColor === '#ffaa00' ? 'rgba(255,170,0,0.15)' : 'rgba(0,255,102,0.15)');
+                            }
+
+                            // Sub-meters
+                            document.getElementById('meter-ai-val').innerText = (data.ai_score || 0) + '%';
+                            document.getElementById('meter-ai-fill').style.width = (data.ai_score || 0) + '%';
+
+                            document.getElementById('meter-tamper-val').innerText = (data.tamper_score || 0) + '%';
+                            document.getElementById('meter-tamper-fill').style.width = (data.tamper_score || 0) + '%';
+
+                            // Badges
+                            const badgesBox = document.getElementById('badges-container');
+                            badgesBox.innerHTML = '';
+                            if (data.badges) {
+                                data.badges.forEach(b => {
+                                    const span = document.createElement('span');
+                                    span.className = `hud-badge ${b.type}`;
+                                    span.innerText = b.label;
+                                    badgesBox.appendChild(span);
+                                });
+                            }
+
+                            // Summary Card
+                            if (data.verdict_summary) {
+                                document.getElementById('summary-card').style.display = 'block';
+                                document.getElementById('res-summary').innerText = data.verdict_summary;
+                                document.getElementById('res-summary').style.color = color;
+                            }
+
+                            // Intelligence linkouts
+                            document.getElementById('tineye-btn').dataset.url = data.tineye;
+                            document.getElementById('tineye-btn').style.display = 'block';
+                            document.getElementById('google-btn').style.display = 'block';
+
+                            addLog(`Arbitration Complete: ${data.verdict} (Suspicion: ${score}%, Type: ${data.detection_type})`);
+                            startBtn.disabled = false;
+                            startBtn.innerText = "🚀 EXECUTE TRI-BRANCH ANALYSIS";
+                            document.getElementById('canvas-status').innerText = "ONLINE";
+                        }, 300);
+                    }, 300);
+                }, 300);
+
+            } catch (e) {
+                addLog(`Engine Error: ${e.message}`);
+                alert("Connection or execution error during analysis.");
+                startBtn.disabled = false;
+                startBtn.innerText = "🚀 EXECUTE TRI-BRANCH ANALYSIS";
+                document.getElementById('canvas-status').innerText = "OFFLINE";
+            }
         }
 
         async function generatePDF() {
-            const md5 = document.getElementById('res-md5').innerText;
-            const sha = document.getElementById('res-sha').innerText;
-            if(md5 === "Waiting...") return alert("Run investigation first!");
-            
+            if (!currentAnalysisData) {
+                return alert("Run investigation on an image first!");
+            }
+
+            const activeImg = document.getElementById('ela-preview').src;
+
             const payload = {
-                md5: md5,
-                sha256: sha,
-                score: document.getElementById('score-text').innerText,
-                verdict: document.getElementById('score-text').style.color === "rgb(255, 46, 46)" ? "MANIPULATED" : "AUTHENTIC",
+                md5: currentAnalysisData.hashes.md5,
+                sha256: currentAnalysisData.hashes.sha256,
+                phash: currentAnalysisData.hashes.phash,
+                score: currentAnalysisData.score,
+                ai_score: currentAnalysisData.ai_score,
+                tamper_score: currentAnalysisData.tamper_score,
+                verdict: currentAnalysisData.verdict,
+                verdict_badge: currentAnalysisData.verdict_badge,
+                detection_type: currentAnalysisData.detection_type,
+                verdict_summary: currentAnalysisData.verdict_summary,
+                conformal_prediction: currentAnalysisData.conformal_prediction,
+                telemetry: currentAnalysisData.telemetry,
+                provenance: currentAnalysisData.provenance,
+                active_image: activeImg,
+                active_mode: currentViewMode,
                 timestamp: new Date().toLocaleString()
             };
-            const res = await fetch('/download_report', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            const blob = await res.blob();
-            const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = "DeepTrace_Report.pdf"; a.click();
+
+            addLog("Compiling Forensic Dossier PDF with visual exhibit...");
+            try {
+                const res = await fetch('/download_report', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error("Report compilation failed");
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                a.download = `DeepTrace_Dossier_${currentAnalysisData.hashes.md5.substring(0, 8)}.pdf`;
+                a.click();
+                addLog("Forensic Dossier exported successfully.");
+            } catch (e) {
+                addLog(`[ERROR] Report generation failed: ${e.message}`);
+                alert("Failed to export PDF report.");
+            }
         }
 
         function addLog(msg) {
@@ -163,6 +530,11 @@
             logs.innerHTML += `<br><span style="color: #666;">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
             logs.scrollTop = logs.scrollHeight;
         }
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
     </script>
 </body>
 </html>

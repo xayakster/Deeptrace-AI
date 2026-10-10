@@ -1,5 +1,6 @@
 flask
 pillow
 exifread
-opencv-python
+opencv-python-headless
 numpy
+fpdf2

@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+venv/
+.agents/
+.git
+.gitignore
+uploads/*
+!uploads/.gitkeep
+archive
+graphify-out
+.agents
+planning-with-files/
