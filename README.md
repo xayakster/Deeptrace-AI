@@ -34,7 +34,7 @@ DeepTrace AI is a court-defensible digital image forensics workstation engineere
 | **Image Processing & Math** | OpenCV (`opencv-python-headless`), Pillow (PIL), NumPy |
 | **Forensic PDF Engine** | FPDF2 2.8.9 (In-memory `io.BytesIO` streaming) |
 | **Testing & Quality** | Pytest, Pytest-Cov (53 tests, 88% overall statement coverage, 100% pass rate) |
-| **Code Intelligence** | Graphify AST Knowledge Graph (181 nodes, 198 edges) |
+| **Code Intelligence** | Graphify AST Knowledge Graph (172 nodes, 213 edges) |
 | **Security Scanning** | Bandit (AST security scanning, 0 High / 0 Medium vulnerabilities) |
 | **Frontend UI** | HTML5, Vanilla CSS3 (Obsidian Dark Studio), Modern JavaScript (ES6) |
 
