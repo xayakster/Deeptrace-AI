@@ -44,8 +44,8 @@ DeepTrace AI is a court-defensible digital image forensics workstation engineere
 
 DeepTrace AI follows Cookiecutter-standardized project structuring principles with strict separation of responsibilities:
 
-```text
-root/
+```
+Deeptrace-AI/
 │
 ├── frontend/       # Frontend UI templates, styles, and static assets
 │   ├── templates/  # Jinja2 templates (index.html, dashboard.html)
