@@ -33,6 +33,7 @@ models/*.onnx
 .agents
 graphify-out
 planning-with-files/
+docs/
 
 # Local Project Backups (Safe Restore Directory)
 backups/
