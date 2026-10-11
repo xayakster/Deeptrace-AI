@@ -85,10 +85,6 @@ Deeptrace-AI/
 │       ├── ai_generated_images/ # Neural synthetic media (Midjourney, DALL-E, SD)
 │       └── README.md            # Dataset specification and citations
 │
-├── docs/           # Documentation, research reports, and presentation assets
-│   ├── reports/      # Forensic investigation & architectural reports
-│   └── presentation/ # Workstation screenshots & presentation slides
-│
 ├── app.py          # Clean root runner delegating to backend.app
 ├── requirements.txt# Python dependency manifest
 └── README.md       # Canonical project documentation and entry point
@@ -202,4 +198,4 @@ All threshold values in DeepTrace AI are traceable to peer-reviewed literature a
 - **Pan et al. (IEEE TIFS 2012) & Wang et al. (CVPR 2020):** Youden Index optimal tampering boundary at $65.0\%$.
 - **Jampana et al. (IJISAE 2023):** Inconclusive buffer ($35.1\% - 65.0\%$) reducing false positive accusations on transcoded imagery by $34\%$.
 
-Detailed mathematical proofs, formulas, and paper references are documented in [docs/reports/DeepTrace_AI_Technical_Report.md](docs/reports/DeepTrace_AI_Technical_Report.md) and [planning-with-files/findings.md](planning-with-files/findings.md).
+Detailed mathematical proofs, formulas, and calibration references are documented in the peer-reviewed literature and project technical documentation.
