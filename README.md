@@ -87,25 +87,12 @@ root/
 │
 ├── docs/           # Documentation, research reports, and presentation assets
 │   ├── reports/      # Forensic investigation & architectural reports
-│   ├── archive/      # Historical prompt requirements & UI specs
 │   └── presentation/ # Workstation screenshots & presentation slides
 │
 ├── app.py          # Clean root runner delegating to backend.app
 ├── requirements.txt# Python dependency manifest
 └── README.md       # Canonical project documentation and entry point
 ```
-
-### Project Structure Rules
-1. **Root Cleanliness:** The root directory contains only entry points (`app.py`, `README.md`, `requirements.txt`).
-2. **Strict Responsibility Placement:**
-   - Frontend-related code belongs exclusively in `frontend/`.
-   - Backend/API/forensic code belongs exclusively in `backend/`.
-   - Automated tests belong exclusively in `tests/`.
-   - Operational and benchmark scripts belong in `scripts/`.
-   - Deployment and tool configurations belong in `configs/`.
-   - Datasets and benchmark images belong in `data/`.
-   - Reports, archives, and architectural documents belong in `docs/`.
-3. **No Suffix Sprawl:** Never create versioned backup folders (`v2`, `backup`, `old`, `new`). Use Git history.
 
 ---
 
