@@ -276,22 +276,36 @@
                 </div>
             </div>
 
-            <!-- Bi-Axial Telemetry Meters (AI vs Tampering) -->
+            <!-- Dual-Signal Forensics Meter (Neural Attribution vs Physical Sensor vs Tampering) -->
             <div class="v3-meters-card">
                 <div class="v3-meter-header">
-                    <span>AI SYNTHESIS INDEX</span>
-                    <span id="meter-ai-val" style="color:var(--v3-coral);">--%</span>
+                    <span>🧠 DEEP NEURAL ATTRIBUTION</span>
+                    <span id="meter-neural-val" style="color:var(--v3-coral);">--%</span>
                 </div>
                 <div class="v3-meter-bar">
-                    <div class="v3-meter-fill" id="meter-ai-fill" style="background:var(--v3-coral);"></div>
+                    <div class="v3-meter-fill" id="meter-neural-fill" style="background:var(--v3-coral);"></div>
                 </div>
 
                 <div class="v3-meter-header" style="margin-top:8px;">
-                    <span>TAMPERING INDEX</span>
+                    <span>⚡ PHYSICAL SENSOR CONSISTENCY</span>
+                    <span id="meter-physical-val" style="color:var(--v3-amber);">--%</span>
+                </div>
+                <div class="v3-meter-bar">
+                    <div class="v3-meter-fill" id="meter-physical-fill" style="background:var(--v3-amber);"></div>
+                </div>
+
+                <div class="v3-meter-header" style="margin-top:8px;">
+                    <span>🔥 TAMPERING & SPLICING</span>
                     <span id="meter-tamper-val" style="color:var(--v3-blue);">--%</span>
                 </div>
                 <div class="v3-meter-bar">
                     <div class="v3-meter-fill" id="meter-tamper-fill" style="background:var(--v3-blue);"></div>
+                </div>
+
+                <!-- Hidden backward-compatibility elements -->
+                <div style="display:none;" aria-hidden="true">
+                    <span id="meter-ai-val">--%</span>
+                    <div id="meter-ai-fill"></div>
                 </div>
             </div>
 
@@ -958,12 +972,39 @@
                                 document.getElementById('conformal-desc').innerText = conf.explanation || '';
                             }
 
-                            // Sub-meters
-                            document.getElementById('meter-ai-val').innerText = (data.ai_score || 0) + '%';
-                            document.getElementById('meter-ai-fill').style.width = (data.ai_score || 0) + '%';
+                            // Dual-Signal & Tampering Meters
+                            const neuralVal = data.neural_ai_score !== undefined ? data.neural_ai_score : (data.ai_score || 0);
+                            const physicalVal = data.physical_sensor_score !== undefined ? data.physical_sensor_score : (data.ai_score || 0);
+                            const tamperVal = data.tamper_score || 0;
+                            const aiVal = data.ai_score || 0;
 
-                            document.getElementById('meter-tamper-val').innerText = (data.tamper_score || 0) + '%';
-                            document.getElementById('meter-tamper-fill').style.width = (data.tamper_score || 0) + '%';
+                            const mNeuralVal = document.getElementById('meter-neural-val');
+                            const mNeuralFill = document.getElementById('meter-neural-fill');
+                            if (mNeuralVal && mNeuralFill) {
+                                mNeuralVal.innerText = neuralVal + '%';
+                                mNeuralFill.style.width = Math.min(100, Math.max(0, neuralVal)) + '%';
+                            }
+
+                            const mPhysVal = document.getElementById('meter-physical-val');
+                            const mPhysFill = document.getElementById('meter-physical-fill');
+                            if (mPhysVal && mPhysFill) {
+                                mPhysVal.innerText = physicalVal + '%';
+                                mPhysFill.style.width = Math.min(100, Math.max(0, physicalVal)) + '%';
+                            }
+
+                            const mTamperVal = document.getElementById('meter-tamper-val');
+                            const mTamperFill = document.getElementById('meter-tamper-fill');
+                            if (mTamperVal && mTamperFill) {
+                                mTamperVal.innerText = tamperVal + '%';
+                                mTamperFill.style.width = Math.min(100, Math.max(0, tamperVal)) + '%';
+                            }
+
+                            const mAiVal = document.getElementById('meter-ai-val');
+                            const mAiFill = document.getElementById('meter-ai-fill');
+                            if (mAiVal && mAiFill) {
+                                mAiVal.innerText = aiVal + '%';
+                                mAiFill.style.width = Math.min(100, Math.max(0, aiVal)) + '%';
+                            }
 
                             // Badges (Formatted as individual forensic chips with icons)
                             const badgesBox = document.getElementById('badges-container');

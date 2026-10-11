@@ -1,0 +1,19 @@
+{
+  "model_name": "DeepTrace-MobileModelV2-ONNX",
+  "version": "2.5.0",
+  "architecture": "MobileNetV2-DeepFake-Detector",
+  "input_size": [224, 224],
+  "mean": [0.485, 0.456, 0.406],
+  "std": [0.229, 0.224, 0.225],
+  "temperature": 1.15,
+  "confidence_threshold": 0.50,
+  "labels": {
+    "0": "AUTHENTIC",
+    "1": "AI_GENERATED"
+  },
+  "runtime": {
+    "provider": "CPUExecutionProvider",
+    "intra_op_num_threads": 2,
+    "execution_mode": "ORT_SEQUENTIAL"
+  }
+}

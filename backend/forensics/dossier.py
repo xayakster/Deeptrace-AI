@@ -335,6 +335,8 @@ def generate_forensic_dossier_pdf(data: Dict[str, Any]) -> io.BytesIO:
     verdict_summary = str(data.get('verdict_summary') or data.get('summary') or "Forensic examination completed.")
     
     ai_score = str(data.get('ai_score', '0.0'))
+    neural_ai_score = str(data.get('neural_ai_score') or data.get('scores', {}).get('neural_ai_score') or ai_score)
+    physical_sensor_score = str(data.get('physical_sensor_score') or data.get('scores', {}).get('physical_sensor_score') or ai_score)
     tamper_score = str(data.get('tamper_score', '0.0'))
 
     # 3. Extract Provenance & Conformal Telemetry
@@ -352,12 +354,14 @@ def generate_forensic_dossier_pdf(data: Dict[str, Any]) -> io.BytesIO:
     # 4. Map ENFSI Evaluative Scale
     enfsi = map_enfsi_verbal_scale(score_val, detection_type, is_singleton)
 
-    # 5. Extract Physical Telemetry
+    # 5. Extract Physical & Neural Telemetry
     telemetry = data.get('telemetry') or {}
     spatial_z = str(telemetry.get('spatial_inconsistency') or data.get('tamper', {}).get('spatial_inconsistency') or "1.00")
     lap_var = str(telemetry.get('laplacian_variance') or data.get('tamper', {}).get('laplacian_variance') or "100.0")
     spectral_peak = str(telemetry.get('spectral_peak_ratio') or "0.150")
     npr_cov = str(telemetry.get('npr_covariance_score') or "0.200")
+    srm_energy = str(telemetry.get('srm_noise_energy') or data.get('frequency', {}).get('srm_noise_energy') or "0.012")
+    srm_void = str(telemetry.get('srm_void_ratio') or data.get('frequency', {}).get('srm_void_ratio') or "0.00")
     coverage_ratio = str(telemetry.get('tamper_coverage_ratio') or data.get('tamper', {}).get('tamper_coverage_ratio') or "0.0")
     reliability_index = str(telemetry.get('reliability_index') or data.get('tamper', {}).get('reliability_index') or "1.0")
     native_q = str(data.get('tamper', {}).get('adaptive_quality') or data.get('adaptive_quality') or "90")
@@ -455,7 +459,7 @@ def generate_forensic_dossier_pdf(data: Dict[str, Any]) -> io.BytesIO:
     pdf.set_xy(16, y_card + 6.8)
     pdf.set_font('Helvetica', '', 8)
     pdf.set_text_color(240, 245, 255)
-    pdf.cell(0, 4, f"DECISION TIER: [{verdict_badge}]  -  SUB-TYPE: {detection_type}  -  AI SYNTHESIS: {ai_score}%  -  TAMPERING: {tamper_score}%", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 4, f"DECISION TIER: [{verdict_badge}]  -  SUB-TYPE: {detection_type}  -  NEURAL AI: {neural_ai_score}%  -  PHYSICAL SENSOR: {physical_sensor_score}%  -  TAMPERING: {tamper_score}%", new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_y(y_card + 14.5)
 
@@ -611,7 +615,33 @@ def generate_forensic_dossier_pdf(data: Dict[str, Any]) -> io.BytesIO:
         r7.cell("MATCHED", style=FONT_VAL)
         r7.cell("Compression baseline calibration", style=FONT_VAL)
 
-    pdf.ln(4.0)
+        # Row 8: Deep Neural Latent Attribution (ONNX Model)
+        try:
+            n_val = float(neural_ai_score)
+            n_status = "AI ATTR" if n_val >= 50.0 else "NATURAL"
+        except ValueError:
+            n_status = "EVALUATED"
+        r8 = table.row()
+        r8.cell("Deep Neural Feature Attribution", style=FONT_KEY)
+        r8.cell(f"{neural_ai_score}%", style=FONT_VAL)
+        r8.cell("> 50.0% (ONNX)", style=FONT_VAL)
+        r8.cell(n_status, style=FONT_VAL)
+        r8.cell("Pretrained multi-generator space", style=FONT_VAL)
+
+        # Row 9: Spatial Rich Model (SRM) Noise Residuals
+        try:
+            srm_v_val = float(srm_void)
+            srm_status = "NOISE VOID" if srm_v_val > 0.40 else "STOCHASTIC"
+        except ValueError:
+            srm_status = "EVALUATED"
+        r9 = table.row()
+        r9.cell("SRM High-Pass Sensor Noise", style=FONT_KEY)
+        r9.cell(f"E={srm_energy[:5]}, V={srm_void}", style=FONT_VAL)
+        r9.cell("Void < 0.25 (Optical)", style=FONT_VAL)
+        r9.cell(srm_status, style=FONT_VAL)
+        r9.cell("Linear high-pass sensor shot noise", style=FONT_VAL)
+
+    pdf.ln(3.0)
 
     # Section 8: Camera Hardware & Sensor EXIF Metadata Table
     pdf.draw_section_banner("8.0", "CAMERA HARDWARE & EMBEDDED EXIF METADATA", "PROVENANCE FORENSICS")

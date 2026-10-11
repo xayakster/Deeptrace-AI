@@ -32,12 +32,19 @@ from .dossier import (
     ForensicDossierPDF,
 )
 
+from .neural_detector import (
+    detect_neural_synthesis,
+    ONNXDetector,
+)
+
 __all__ = [
     "calculate_hashes",
     "calculate_perceptual_hash",
     "extract_metadata",
     "audit_c2pa_manifest",
     "analyze_frequency_domain",
+    "detect_neural_synthesis",
+    "ONNXDetector",
     "perform_tamper_analysis",
     "compute_laplacian_noise_variance",
     "compute_block_anomaly_grid",

@@ -160,13 +160,78 @@ def compute_npr_covariance_score(img_gray: np.ndarray) -> Tuple[float, float]:
         return 0.0, 0.0
 
 
+def compute_srm_residual_energy(img_gray: np.ndarray) -> Tuple[float, float, float]:
+    """
+    Computes Spatial Rich Model (SRM) high-pass residual filter metrics (Fridrich & Kodovsky, 2012).
+    Applies the KV3 3x3 high-pass filter:
+        [[-1,  2, -1],
+         [ 2, -4,  2],
+         [-1,  2, -1]]
+    In authentic photographs, natural sensor photon shot noise exhibits consistent stochastic
+    residual energy across smooth/medium regions without spatial voids.
+    In synthetic generative decoders (FLUX.1, SD3, Midjourney v6), high-pass residuals display
+    characteristic spatial noise voids or abnormal spectral energy concentrations.
+
+    Returns:
+    - srm_energy: Mean absolute residual noise energy (normalized).
+    - srm_void_ratio: Fraction of 16x16 blocks exhibiting artificial noise void (<0.012).
+    - srm_score: Normalized synthetic likelihood score [0.0, 1.0].
+    """
+    try:
+        img_f = img_gray.astype(np.float32) / 255.0
+        h, w = img_f.shape
+        if h < 32 or w < 32:
+            return 0.0, 0.0, 0.0
+
+        # KV3 High-Pass Filter Kernel (3x3)
+        kv3_kernel = np.array([
+            [-1.0,  2.0, -1.0],
+            [ 2.0, -4.0,  2.0],
+            [-1.0,  2.0, -1.0]
+        ], dtype=np.float32) / 4.0
+
+        residual = cv2.filter2D(img_f, -1, kv3_kernel)
+        abs_res = np.abs(residual)
+        mean_energy = float(np.mean(abs_res))
+
+        block_size = 16
+        blocks_h = h // block_size
+        blocks_w = w // block_size
+
+        if blocks_h == 0 or blocks_w == 0:
+            return float(round(mean_energy, 4)), 0.0, 0.0
+
+        grid = abs_res[:blocks_h * block_size, :blocks_w * block_size]
+        blocks = grid.reshape(blocks_h, block_size, blocks_w, block_size).transpose(0, 2, 1, 3)
+        block_energies = np.mean(blocks, axis=(2, 3))
+
+        void_blocks = np.sum(block_energies < 0.012)
+        total_blocks = blocks_h * blocks_w
+        void_ratio = float(void_blocks) / float(total_blocks)
+
+        if void_ratio > 0.45 or mean_energy < 0.012:
+            srm_score = min(0.95, 0.50 + void_ratio * 0.7)
+        elif void_ratio > 0.25:
+            srm_score = 0.30 + (void_ratio - 0.25) * 1.0
+        elif mean_energy > 0.22:
+            srm_score = min(0.85, 0.40 + (mean_energy - 0.22) * 2.0)
+        else:
+            srm_score = max(0.05, void_ratio * 0.8)
+
+        return float(round(mean_energy, 4)), float(round(void_ratio, 3)), float(round(srm_score, 3))
+    except Exception:
+        return 0.0, 0.0, 0.0
+
+
 def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
     """
-    Executes full 2D Fast Fourier Transform and NPR forensic pipeline on target image:
+    Executes full 2D Fast Fourier Transform, SRM residual, and NPR forensic pipeline:
     - 2D Separable Hanning Windowing (eliminates boundary spectral leakage)
     - Azimuthal radial energy integration
     - Periodic high-frequency lattice peak detection
+    - Spatial Rich Model (SRM) linear high-pass residual energy & void ratio
     - Neighboring Pixel Relationships (NPR) structural covariance analysis
+    - Physical Optical Sensor Consistency Score (0.0 to 100.0%)
     """
     try:
         img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -176,13 +241,17 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
                 "high_freq_energy_ratio": 0.0,
                 "decay_slope": 0.0,
                 "frequency_ai_score": 15.0,
+                "physical_sensor_score": 15.0,
                 "is_spectral_anomaly": False,
                 "spectral_summary": "Unable to read image for spectral analysis.",
                 "npr_covariance_score": 0.0,
-                "npr_regularity": 0.0
+                "npr_regularity": 0.0,
+                "srm_noise_energy": 0.0,
+                "srm_void_ratio": 0.0,
+                "srm_score": 0.0
             }
 
-        # Resize to fixed standard dimension if very large to optimize FFT speed and standardize metrics
+        # Resize to fixed standard dimension if very large to optimize FFT speed
         h, w = img_gray.shape
         if max(h, w) > 1024:
             scale = 1024.0 / max(h, w)
@@ -209,17 +278,17 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
         # 2. Neighboring Pixel Relationships (NPR) structural covariance
         npr_score, npr_reg = compute_npr_covariance_score(img_gray)
 
-        # Scientific Scoring Heuristic based on literature:
-        # Natural images have high-frequency peak prominence < 0.35 and steep negative slopes.
-        # GANs/Diffusion upsamplers produce periodic high-freq peaks (prominence > 0.45)
-        # or elevated structural covariance regularity (NPR > 0.60).
-        ai_score = 15.0  # Baseline authentic floor
+        # 3. Spatial Rich Model (SRM) High-Pass Residual Analysis
+        srm_energy, srm_void_ratio, srm_score = compute_srm_residual_energy(img_gray)
 
+        # Scientific Physical Sensor Scoring:
+        # Natural images have high-frequency peak prominence < 0.35, steep negative slope,
+        # stochastic sensor noise (srm_score < 0.3), and low NPR covariance (< 0.35).
+        ai_score = 12.0  # Baseline authentic floor
         is_anomaly = False
         reasons = []
 
         if peak_ratio > 0.50:
-            # Strong lattice peaks typical of checkerboard deconvolution
             ai_score += 45.0
             is_anomaly = True
             reasons.append("Periodic spectral grid peaks detected (typical of neural upsampling).")
@@ -227,13 +296,11 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
             ai_score += 25.0
             reasons.append("Moderate high-frequency periodic energy spikes detected.")
 
-        # Check for abnormal decay slope (decay slope flatter than -0.05 indicates synthesized high frequencies)
         if slope > -0.05 and peak_ratio > 0.35:
             ai_score += 25.0
             is_anomaly = True
             reasons.append("Abnormal power spectrum energy decay curve.")
 
-        # Check for elevated NPR structural covariance (catches modern DiTs like FLUX/SD3)
         if npr_score > 0.65:
             ai_score += 35.0
             is_anomaly = True
@@ -242,8 +309,39 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
             ai_score += 18.0
             reasons.append("Mild structural upsampling covariance detected.")
 
+        if srm_score > 0.60:
+            ai_score += 25.0
+            is_anomaly = True
+            reasons.append(f"Spatial Rich Model noise void detected (SRM void ratio={srm_void_ratio:.2f}).")
+        elif srm_score > 0.40:
+            ai_score += 12.0
+            reasons.append("Elevated SRM high-pass residual anomaly.")
+
         ai_score = float(round(min(max(ai_score, 0.0), 96.0), 1))
         
+        # Dedicated Physical Optical Sensor Score (0–100%)
+        # Refined combination of physical sensor optics, shot noise, and spectral decay
+        phys_score = 8.0
+        if peak_ratio > 0.45:
+            phys_score += 32.0
+        elif peak_ratio > 0.35:
+            phys_score += 16.0
+
+        if slope > -0.05 and peak_ratio > 0.30:
+            phys_score += 20.0
+
+        if npr_score > 0.60:
+            phys_score += 28.0
+        elif npr_score > 0.40:
+            phys_score += 14.0
+
+        if srm_score > 0.55:
+            phys_score += 24.0
+        elif srm_score > 0.35:
+            phys_score += 12.0
+
+        physical_sensor_score = float(round(min(max(phys_score, 5.0), 98.0), 1))
+
         summary = " ".join(reasons) if reasons else "Normal continuous optical power spectrum decay."
 
         return {
@@ -251,10 +349,14 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
             "high_freq_energy_ratio": round(high_ratio, 3),
             "decay_slope": round(slope, 4),
             "frequency_ai_score": ai_score,
+            "physical_sensor_score": physical_sensor_score,
             "is_spectral_anomaly": is_anomaly,
             "spectral_summary": summary,
             "npr_covariance_score": npr_score,
-            "npr_regularity": npr_reg
+            "npr_regularity": npr_reg,
+            "srm_noise_energy": srm_energy,
+            "srm_void_ratio": srm_void_ratio,
+            "srm_score": srm_score
         }
 
     except Exception as e:
@@ -263,8 +365,12 @@ def analyze_frequency_domain(image_path: str) -> Dict[str, Any]:
             "high_freq_energy_ratio": 0.0,
             "decay_slope": 0.0,
             "frequency_ai_score": 15.0,
+            "physical_sensor_score": 15.0,
             "is_spectral_anomaly": False,
             "spectral_summary": f"Frequency analysis failed: {str(e)}",
             "npr_covariance_score": 0.0,
-            "npr_regularity": 0.0
+            "npr_regularity": 0.0,
+            "srm_noise_energy": 0.0,
+            "srm_void_ratio": 0.0,
+            "srm_score": 0.0
         }
