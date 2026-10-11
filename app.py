@@ -5,11 +5,15 @@ AI-Powered Digital Media Forensics & Source Tracking System
 
 import os
 import io
+import time
 import uuid
 import base64
 import shutil
 import tempfile
-from typing import Dict, Any
+import threading
+from datetime import datetime, timezone
+from collections import OrderedDict
+from typing import Dict, Any, Optional
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, send_file
 from fpdf import FPDF
@@ -24,6 +28,8 @@ from forensics import (
     perform_tamper_analysis,
     generate_ai_attribution_heatmap,
     arbitrate_forensic_evidence,
+    generate_forensic_dossier_pdf,
+    ForensicDossierPDF,
 )
 
 # Configure Decompression Bomb Protection
@@ -36,36 +42,60 @@ app = Flask(
 )
 
 # Application Configuration
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024  # 15 MB max upload
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'}
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+# --- THREAD-SAFE SERVER-SIDE EXAMINATION RECORD CACHE ---
+
+class AnalysisRecordCache:
+    """
+    Thread-safe, memory-bounded LRU cache for immutable forensic examination records.
+    Guarantees that reports downloaded via analysis_id reflect exact server-side evidence
+    and prevents client-side payload tampering.
+    """
+    def __init__(self, capacity: int = 100, max_age_seconds: int = 3600):
+        self.capacity = capacity
+        self.max_age_seconds = max_age_seconds
+        self._cache = OrderedDict()
+        self._lock = threading.Lock()
+
+    def put(self, analysis_id: str, record: Dict[str, Any]):
+        with self._lock:
+            if len(self._cache) >= self.capacity:
+                self._cache.popitem(last=False)
+            record['_cached_at'] = time.time()
+            self._cache[analysis_id] = record
+
+    def get(self, analysis_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            if analysis_id not in self._cache:
+                return None
+            record = self._cache[analysis_id]
+            if time.time() - record.get('_cached_at', 0) > self.max_age_seconds:
+                del self._cache[analysis_id]
+                return None
+            self._cache.move_to_end(analysis_id)
+            return record
+
+
+ANALYSIS_RECORD_CACHE = AnalysisRecordCache()
+ForensicReport = ForensicDossierPDF  # Backward-compatibility alias
+
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    """Handle uploads exceeding maximum allowed size."""
+    return jsonify({
+        "error": "File exceeds 15 MB. Please upload an image smaller than 15 MB."
+    }), 413
+
+
 def allowed_file(filename: str) -> bool:
     """Validate file extension against allowed forensic image formats."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-# --- PDF FORENSIC DOSSIER GENERATOR ---
-
-class ForensicReport(FPDF):
-    """Programmatic PDF Forensic Report Generator for DeepTrace AI."""
-
-    def header(self):
-        self.set_font('Courier', 'B', 15)
-        self.set_text_color(20, 20, 20)
-        self.cell(0, 10, 'DEEPTRACE AI - FORENSIC DOSSIER', new_x="LMARGIN", new_y="NEXT", align='C')
-        self.set_draw_color(0, 242, 255)
-        self.set_line_width(0.8)
-        self.line(10, 22, 200, 22)
-        self.ln(12)
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Courier', 'I', 8)
-        self.set_text_color(120, 120, 120)
-        self.cell(0, 10, f'DeepTrace Forensic OS v2.5 - Confidential - Page {self.page_no()}', new_x="RIGHT", new_y="TOP", align='C')
 
 
 # --- APPLICATION ROUTES ---
@@ -130,6 +160,11 @@ def analyze():
         if len(file_bytes) == 0:
             return jsonify({"error": "Uploaded file is empty (0 bytes)."}), 400
 
+        if len(file_bytes) > 15 * 1024 * 1024:
+            return jsonify({
+                "error": "File exceeds 15 MB. Please upload an image smaller than 15 MB."
+            }), 400
+
         # Validate that payload is a decodeable image
         try:
             img = Image.open(io.BytesIO(file_bytes))
@@ -186,7 +221,64 @@ def analyze():
             explainability_data=ai_explain_data
         )
 
+        # Generate persistent analysis record identifier
+        analysis_id = str(uuid.uuid4())
+        
+        # Construct complete examination record for server-side integrity binding
+        exam_record = {
+            "analysis_id": analysis_id,
+            "filename": file.filename,
+            "file_bytes": file_bytes,
+            "original_bytes": file_bytes,
+            "hashes": {
+                "md5": md5,
+                "sha256": sha256,
+                "phash": phash
+            },
+            "md5": md5,
+            "sha256": sha256,
+            "phash": phash,
+            "metadata": metadata,
+            "provenance": provenance_data,
+            "frequency": frequency_data,
+            "tamper": {
+                "spatial_inconsistency": tamper_data["spatial_inconsistency"],
+                "laplacian_variance": tamper_data["laplacian_variance"],
+                "tamper_coverage_ratio": tamper_data["tamper_coverage_ratio"],
+                "base_ela_score": tamper_data["base_ela_score"],
+                "tamper_score": tamper_data["tamper_score"],
+                "adaptive_quality": tamper_data.get("adaptive_quality", 90),
+                "reliability_index": tamper_data.get("reliability_index", 1.0)
+            },
+            "explainability": {
+                "attribution_peak": ai_explain_data["attribution_peak"],
+                "high_attribution_ratio": ai_explain_data["high_attribution_ratio"],
+                "attribution_level": ai_explain_data["attribution_level"],
+                "summary": ai_explain_data["summary"],
+                "colormap": colormap,
+                "alpha": alpha
+            },
+            "ela": tamper_data["ela_b64"],
+            "heatmap": tamper_data["heatmap_b64"],
+            "ai_heatmap": ai_explain_data["ai_heatmap_b64"],
+            "score": arbitration["composite_score"],
+            "ai_score": arbitration["ai_score"],
+            "tamper_score": arbitration["tamper_score"],
+            "verdict": arbitration["verdict_label"],
+            "verdict_badge": arbitration["verdict_badge"],
+            "verdict_color": arbitration["verdict_color"],
+            "detection_type": arbitration["detection_type"],
+            "verdict_summary": arbitration["summary"],
+            "badges": arbitration["badges"],
+            "conformal_prediction": arbitration.get("conformal_prediction", {}),
+            "telemetry": arbitration["telemetry"],
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "tineye": f"https://tineye.com/search/{md5}"
+        }
+        ANALYSIS_RECORD_CACHE.put(analysis_id, exam_record)
+
         return jsonify({
+            "analysis_id": analysis_id,
             "hashes": {
                 "md5": md5,
                 "sha256": sha256,
@@ -244,145 +336,34 @@ def analyze():
 @app.route('/download_report', methods=['POST'])
 def download_report():
     data = request.json or {}
-    score_clean = str(data.get('score', '0')).replace('%', '').strip()
-    try:
-        score_val = float(score_clean)
-    except ValueError:
-        score_val = 0.0
+    analysis_id = data.get('analysis_id')
+    cached_record = ANALYSIS_RECORD_CACHE.get(analysis_id) if analysis_id else None
 
-    verdict_label = data.get('verdict', 'INCONCLUSIVE')
-    verdict_badge = data.get('verdict_badge', 'INCONCLUSIVE')
-    detection_type = data.get('detection_type', 'N/A')
-    summary_text = data.get('verdict_summary', 'Forensic analysis completed.')
+    if cached_record:
+        report_data = dict(cached_record)
+        # Allow client-selected UI visual preferences if provided
+        if 'active_image' in data:
+            report_data['active_image'] = data['active_image']
+        if 'active_mode' in data:
+            report_data['active_mode'] = data['active_mode']
+        if 'colormap' in data:
+            report_data['colormap'] = data['colormap']
+    else:
+        # 100% backward-compatible fallback for raw JSON payloads
+        report_data = data
 
-    ai_score = data.get('ai_score', 'N/A')
-    tamper_score = data.get('tamper_score', 'N/A')
+    pdf_buffer = generate_forensic_dossier_pdf(report_data)
 
-    telemetry = data.get('telemetry', {})
-    z_score = telemetry.get('spatial_inconsistency', 'N/A')
-    lap_var = telemetry.get('laplacian_variance', 'N/A')
-    spectral_peak = telemetry.get('spectral_peak_ratio', 'N/A')
-    coverage_ratio = telemetry.get('tamper_coverage_ratio', '0.0')
-
-    provenance = data.get('provenance', {})
-    has_c2pa = provenance.get('has_c2pa', False)
-    c2pa_status = provenance.get('details', 'No C2PA manifest found.')
-    c2pa_gen = provenance.get('generator', 'N/A')
-
-    pdf = ForensicReport()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-
-    # Section 1: Case Details
-    pdf.set_text_color(100, 100, 100)
-    pdf.set_font("Courier", size=10)
-    pdf.cell(0, 6, f"TIMESTAMP: {data.get('timestamp', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"CASE ID:   DT-2026-CYBER", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"ENGINE:    DeepTrace Forensic OS v2.5 (Tri-Branch Architecture)", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(3)
-
-    # Section 2: Cryptographic Signatures
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "1. CRYPTOGRAPHIC SIGNATURES & HASH CHAIN", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=9)
-    pdf.cell(0, 5, f"MD5 Digest:        {data.get('md5', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"SHA-256 Digest:    {data.get('sha256', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Perceptual dHash:  {data.get('phash', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(4)
-
-    # Section 3: C2PA Content Credentials
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "2. C2PA PROVENANCE & CONTENT CREDENTIALS AUDIT", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=9)
-    pdf.cell(0, 5, f"Manifest Present:  {'YES' if has_c2pa else 'NO'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Claim Generator:   {c2pa_gen}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Validation State:  {provenance.get('validation_state', 'NONE')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.multi_cell(0, 5, f"Provenance Audit:  {c2pa_status}")
-    pdf.ln(4)
-
-    # Section 4: Calibrated Verdict & Score Breakdown
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "3. CALIBRATED FORENSIC VERDICT & MULTI-BRANCH SCORES", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=10)
-    pdf.cell(0, 6, f"COMPOSITE SUSPICION:  {score_val:.1f}%", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"CLASSIFICATION:       {verdict_label}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"DECISION TIER:        {verdict_badge}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"DETECTION SUB-TYPE:   {detection_type}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"AI SYNTHESIS INDEX:   {ai_score}%", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"TAMPERING INDEX:      {tamper_score}%", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(3)
-
-    # Section 4b: Conformal Uncertainty Guarantee
-    conformal = data.get('conformal_prediction', {})
-    conf_set = ", ".join(conformal.get('prediction_set', [detection_type]))
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "4. CONFORMAL UNCERTAINTY GUARANTEE (95% COVERAGE)", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=9)
-    pdf.cell(0, 5, f"Coverage Guarantee:   95.0% Marginal Confidence", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Guaranteed Set:       [{conf_set}]", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Status Assessment:    {conformal.get('status_label', 'DECISIVE EVALUATION')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(3)
-
-    # Section 5: Quantitative Physical & Structural Telemetry
-    npr_cov = telemetry.get('npr_covariance_score', 'N/A')
-    rel_idx = telemetry.get('reliability_index', '1.0')
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "5. QUANTITATIVE PHYSICAL & STRUCTURAL TELEMETRY", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=9)
-    pdf.cell(0, 5, f"Spatial Inconsistency (Z-Score): {z_score} (Tamper Cutoff: > 3.2)", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Texture Reliability Index:      {rel_idx} (TruFor Anomaly Weight)", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Sensor Noise Texture Variance:  {lap_var} (AI Void Cutoff: < 45.0)", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"2D-FFT Spectral Peak Ratio:     {spectral_peak} (Lattice Anomaly: > 0.38)", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"NPR Structural Covariance:      {npr_cov} (DiT Upsample Anomaly: > 0.65)", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Tamper Heatmap Coverage:        {coverage_ratio}% of total canvas", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(3)
-
-    # Section 6: Findings & Legal Interpretation
-    pdf.set_font("Courier", 'B', 11)
-    pdf.cell(0, 7, "6. FORENSIC FINDINGS & SCIENTIFIC SUMMARY", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Courier", size=9)
-    pdf.multi_cell(0, 5, summary_text)
-    pdf.ln(3)
-
-    # Section 7: Visual Forensic Evidence & Spatial Overlay Attachment
-    visual_b64 = data.get('active_image') or data.get('heatmap') or data.get('ai_heatmap')
-    if visual_b64 and len(str(visual_b64)) > 100:
-        try:
-            raw_b64 = str(visual_b64).split(',')[-1]
-            img_bytes = base64.b64decode(raw_b64)
-            img_stream = io.BytesIO(img_bytes)
-            pdf.add_page()
-            pdf.set_font("Courier", 'B', 11)
-            pdf.cell(0, 7, "6. VISUAL FORENSIC EVIDENCE EXHIBIT", new_x="LMARGIN", new_y="NEXT")
-            pdf.set_font("Courier", size=9)
-            mode_tag = str(data.get('active_mode', 'SPATIAL OVERLAY')).upper()
-            pdf.cell(0, 5, f"EXHIBIT TYPE: Primary Visual Matrix [{mode_tag}]", new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(4)
-            pdf.image(img_stream, x=15, y=38, w=180)
-            pdf.ln(130)
-        except Exception:
-            pass
-
-    disclaimer = (
-        "EVIDENTIARY NOTICE: This report represents digital forensic analysis performed using "
-        "passive statistical feature extraction, 2D Discrete Fourier Transforms, block-level Error "
-        "Level Analysis, spatial feature attribution, and C2PA Content Credentials. Unless backed "
-        "by a cryptographically signed hardware manifest or exact cryptographic source match, "
-        "findings represent probabilistic evidence in accordance with digital forensics best practices."
-    )
-    pdf.set_text_color(120, 120, 120)
-    pdf.set_font("Courier", 'I', 8)
-    pdf.multi_cell(0, 4, disclaimer)
-
-    pdf_buffer = io.BytesIO()
-    pdf.output(pdf_buffer)
-    pdf_buffer.seek(0)
+    md5_tag = str(
+        report_data.get('hashes', {}).get('md5')
+        or report_data.get('md5')
+        or 'dossier'
+    )[:8]
 
     return send_file(
         pdf_buffer,
         as_attachment=True,
-        download_name="DeepTrace_Forensic_Dossier.pdf",
+        download_name=f"DeepTrace_Dossier_{md5_tag}.pdf",
         mimetype='application/pdf'
     )
 

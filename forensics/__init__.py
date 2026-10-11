@@ -26,6 +26,11 @@ from .explainability import (
 from .arbitrator import (
     arbitrate_forensic_evidence,
 )
+from .dossier import (
+    generate_forensic_dossier_pdf,
+    map_enfsi_verbal_scale,
+    ForensicDossierPDF,
+)
 
 __all__ = [
     "calculate_hashes",
@@ -41,4 +46,7 @@ __all__ = [
     "generate_ai_attribution_overlay",
     "compute_patch_synthesis_attribution",
     "arbitrate_forensic_evidence",
+    "generate_forensic_dossier_pdf",
+    "map_enfsi_verbal_scale",
+    "ForensicDossierPDF",
 ]

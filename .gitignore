@@ -24,4 +24,8 @@ graphify-out
 planning-with-files/
 .coverage
 scratch_test_assets/
+frontend_backup/
+frontend_backup_v2/
+frontend_backup_interactive_buttons/
+
 

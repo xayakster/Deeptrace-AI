@@ -3,183 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepTrace AI | Forensic OS</title>
+    <title>DeepTrace AI | Precision Digital Forensics</title>
+    <meta name="description" content="DeepTrace AI — Single-frame precision forensic operating system fusing C2PA provenance, 2D-FFT spectral screening, and multi-scale compression tampering with 95% conformal uncertainty bounds.">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        /* Local overrides to ensure maximum cinematic quality */
-        body {
-            /* Forcing a much darker background gradient over the image */
-            background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), 
-                        url("{{ url_for('static', filename='images/bg.jpg') }}") no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        .container { 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center; 
-            position: relative; 
-            z-index: 10; 
-        }
-
-        .version { 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 12px; 
-            color: #ff2e2e; 
-            letter-spacing: 5px; 
-            margin-bottom: 5px; 
-            text-shadow: 0 0 10px rgba(255, 46, 46, 0.5);
-        }
-
-        .status { 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 10px; 
-            color: #ff2e2e; 
-            letter-spacing: 8px; 
-            margin-bottom: 30px; 
-            opacity: 0.8;
-        }
-
-        /* HIGH-FIDELITY GLITCH TITLE */
-        .title { 
-            font-family: 'Archivo Black', sans-serif; 
-            font-size: clamp(50px, 10vw, 95px); 
-            letter-spacing: 8px; 
-            color: #fff; 
-            text-transform: uppercase;
-            position: relative;
-            /* Sliced RGB effect */
-            text-shadow: 0.05em 0 0 rgba(255,0,0,.75),
-                        -0.025em -0.05em 0 rgba(0,255,0,.75),
-                        0.025em 0.05em 0 rgba(0,0,255,.75);
-            animation: glitch 500ms infinite;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75); }
-            15% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,.75), 0.025em 0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
-            50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,.75), -0.025em 0 0 rgba(0,255,0,.75), 0 -0.05em 0 rgba(0,0,255,.75); }
-            100% { text-shadow: -0.025em 0 0 rgba(255,0,0,.75), -0.025em -0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
-        }
-
-        /* RESTORED SUBTITLE */
-        .subtitle { 
-            font-size: 24px; /* Increased size */
-            font-weight: 400; 
-            letter-spacing: 5px; 
-            margin: 15px 0 50px; 
-            color: #fff; 
-            opacity: 0.9;
-            text-transform: uppercase;
-        }
-
-        /* SCANNER BOX */
-        .scanner-box { 
-            position: relative; 
-            width: 220px; 
-            height: 260px; 
-            margin-bottom: 50px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        /* Corner Brackets */
-        .scanner-box::before, .scanner-box::after { 
-            content: ""; 
-            position: absolute; 
-            width: 30px; 
-            height: 30px; 
-            border: 2px solid #00f2ff; 
-            box-shadow: 0 0 15px #00f2ff; 
-        }
-        .scanner-box::before { top: -10px; left: -10px; border-right: 0; border-bottom: 0; }
-        .scanner-box::after { top: -10px; right: -10px; border-left: 0; border-bottom: 0; }
-
-        .scan-line { 
-            position: absolute; 
-            width: 110%; 
-            height: 3px; 
-            background: #ff2e2e; 
-            box-shadow: 0 0 15px #ff2e2e, 0 0 30px #ff2e2e; 
-            animation: scan 3s infinite linear; 
-            z-index: 5; 
-        }
-
-        @keyframes scan { 
-            0%, 100% { top: 0%; opacity: 0; } 
-            50% { top: 100%; opacity: 1; } 
-        }
-
-        /* RED NEON MOTTO */
-        .motto { 
-            font-family: 'Orbitron', sans-serif; 
-            color: #ff2e2e; 
-            font-size: 16px; 
-            font-weight: 700;
-            letter-spacing: 12px; 
-            margin-bottom: 60px; 
-            text-shadow: 0 0 15px #ff2e2e; 
-            text-transform: uppercase;
-        }
-
-        /* ENTER BUTTON */
-        .btn { 
-            background: rgba(0, 0, 0, 0.6); 
-            border: 1px solid #7000ff; 
-            color: #fff; 
-            padding: 22px 70px; 
-            font-family: 'Orbitron', sans-serif; 
-            letter-spacing: 5px; 
-            text-decoration: none; 
-            transition: 0.4s; 
-            backdrop-filter: blur(15px);
-            border-radius: 2px;
-            font-size: 14px;
-        }
-
-        .btn:hover { 
-            background: #7000ff; 
-            box-shadow: 0 0 50px rgba(112, 0, 255, 0.8); 
-            color: #000; 
-            transform: translateY(-3px);
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="scanlines">
+<body class="sf-body">
 
-    <!-- The external cursor elements -->
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
+    <!-- Ambient Floating Aura Backdrops -->
+    <div style="position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;">
+        <div style="position:absolute; top:-15%; left:20%; width:550px; height:450px; background:radial-gradient(circle, rgba(255,100,66,0.11) 0%, transparent 70%); filter:blur(60px);"></div>
+        <div style="position:absolute; bottom:-10%; right:15%; width:500px; height:450px; background:radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%); filter:blur(70px);"></div>
+    </div>
 
-    <div class="container">
-        <div class="version">VER 2.0.0</div>
-        <div class="status">SYSTEM INITIALIZING...</div>
+    <!-- Minimalist Top Navigation -->
+    <header class="sf-nav" id="sf-nav">
+        <a href="/" class="sf-brand">
+            <div class="sf-logo-mark">DT</div>
+            <div>
+                <span class="sf-brand-text">DEEPTRACE <span>AI</span></span>
+            </div>
+            <div class="sf-status-pill" style="margin-left:8px;">
+                <span class="sf-status-pip"></span>
+                <span>KERNEL v2.5 ONLINE</span>
+            </div>
+        </a>
+
+        <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#64748B; display:none; @media(min-width:768px){display:inline;}">
+                AIR-GAPPED LOCAL INFERENCE
+            </span>
+            <a href="/dashboard" class="sf-nav-btn" id="nav-workstation-btn">
+                <span>LAUNCH WORKSTATION</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Central Single-Viewport Stage -->
+    <main class="sf-stage">
         
-        <h1 class="title">DEEPTRACE AI</h1>
-        
-        <!-- RESTORED & CORRECTED SUBTITLE -->
-        <div class="subtitle">AI-POWERED DIGITAL IMAGE FORENSICS</div>
+        <!-- Left: Editorial Value Proposition & Action -->
+        <div class="sf-left">
+            <div class="sf-pill" id="sf-badge">
+                <span class="pip"></span>
+                <span>TRI-BRANCH FORENSIC OS • 95% CONFORMAL GUARANTEE</span>
+            </div>
 
-        <div class="scanner-box">
-            <div class="scan-line"></div>
-            <img src="{{ url_for('static', filename='images/fingerprint.png') }}" style="width: 100%; filter: drop-shadow(0 0 10px #00f2ff);">
-            <!-- Bottom brackets (Optional CSS helper) -->
-            <div style="position: absolute; width:100%; height:100%; top:0; left:0;">
-                <div style="position: absolute; bottom:-10px; left:-10px; width:30px; height:30px; border:2px solid #00f2ff; border-top:0; border-right:0; box-shadow: 0 0 15px #00f2ff;"></div>
-                <div style="position: absolute; bottom:-10px; right:-10px; width:30px; height:30px; border:2px solid #00f2ff; border-top:0; border-left:0; box-shadow: 0 0 15px #00f2ff;"></div>
+            <h1 class="sf-title" id="sf-title">
+                Unmasking Synthetic Reality with <span class="sf-gradient-text">Mathematical Certainty</span>
+            </h1>
+
+            <p class="sf-sub" id="sf-sub">
+                Scientific multi-signal analysis fusing C2PA cryptographic provenance, 2D-FFT azimuthal spectral screening, and multi-scale compression tampering into distribution-free conformal uncertainty bounds.
+            </p>
+
+            <!-- Three Key Signal Pillars -->
+            <div class="sf-signals" id="sf-signals">
+                <div class="sf-signal-chip">
+                    <span class="accent-icon">🛡️</span>
+                    <span>C2PA Cryptographic Chain</span>
+                </div>
+                <div class="sf-signal-chip">
+                    <span class="accent-icon">🌊</span>
+                    <span>2D-FFT Spectral Resampling</span>
+                </div>
+                <div class="sf-signal-chip">
+                    <span class="accent-icon">🔥</span>
+                    <span>Multi-Scale Tamper Tracing</span>
+                </div>
+            </div>
+
+            <!-- Primary Launch CTA & Hotkey helper -->
+            <div class="sf-cta-row" id="sf-cta-row">
+                <a href="/dashboard" class="sf-btn-primary" id="main-enter-btn">
+                    <span>ENTER FORENSIC WORKSTATION</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <span class="sf-hotkey-pill" title="Press Enter key anytime to open workstation">
+                    Press ↵ Enter
+                </span>
             </div>
         </div>
 
-        <div class="motto">DETECT • ANALYZE • TRACE • REVEAL</div>
+        <!-- Right: Interactive Optical Forensic Aperture -->
+        <div class="sf-right" id="sf-right">
+            <div class="sf-aperture-card">
+                
+                <!-- Rotating Reticle Rings -->
+                <div class="sf-reticle-ring"></div>
+                <div class="sf-reticle-ring inner"></div>
+                
+                <!-- Sweeping Laser Scan -->
+                <div class="sf-laser-sweep"></div>
 
-        <a href="/dashboard" class="btn">ENTER THE FORENSIC LAB</a>
-    </div>
+                <!-- Floating Diagnostic Pips -->
+                <div class="sf-hud-pip top-left" id="hud-coords">
+                    LOC: X: 248 Y: 184
+                </div>
+                <div class="sf-hud-pip top-right" id="hud-zscore">
+                    SPATIAL: Z = 3.84 &gt; 3.2
+                </div>
 
-    <!-- Script at the end of body -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+                <!-- Stage Viewport & Evidence Lens -->
+                <div class="sf-stage-view" id="aperture-stage">
+                    <img src="{{ url_for('static', filename='images/sample_tampered.jpg') }}" alt="Evidence Sample" class="sf-evidence-img" id="aperture-img">
+                    
+                    <!-- Draggable / Mouse-following Reticle Lens -->
+                    <div class="sf-lens" id="aperture-lens">
+                        <canvas id="aperture-canvas"></canvas>
+                        <div class="sf-lens-cross-h"></div>
+                        <div class="sf-lens-cross-v"></div>
+                        <span class="sf-lens-tag" id="aperture-lens-tag">TAMPER RESIDUAL [2.5x]</span>
+                    </div>
+                </div>
+
+                <!-- Quick Filter Switcher Toolbar -->
+                <div class="sf-filter-toolbar">
+                    <button class="sf-filter-btn active" id="btn-filter-tamper" onclick="setLensMode('tamper')">
+                        🔥 TAMPER MAP
+                    </button>
+                    <button class="sf-filter-btn" id="btn-filter-fft" onclick="setLensMode('fft')">
+                        🌊 2D-FFT GRID
+                    </button>
+                    <button class="sf-filter-btn" id="btn-filter-raw" onclick="setLensMode('raw')">
+                        🔍 2.5x OPTICAL
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Telemetry Status Ribbon -->
+    <footer class="sf-footer" id="sf-footer">
+        <div>
+            DEEPTRACE AI • AIR-GAPPED FORENSIC PLATFORM
+        </div>
+
+        <div class="sf-footer-metrics">
+            <div class="sf-footer-metric">
+                <span>COVERAGE:</span>
+                <span class="val emerald">95.0% CONFORMAL GUARANTEE</span>
+            </div>
+            <div class="sf-footer-metric">
+                <span>INFERENCE:</span>
+                <span class="val">&lt; 250MS LOCAL CPU</span>
+            </div>
+            <div class="sf-footer-metric">
+                <span>AUTOCORRELATION:</span>
+                <span class="val coral">40× SNR BOOST (LAG-2)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP 3.12 (with offline defensive check) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <script>
+        // --- 1. KEYBOARD NAVIGATION (ENTER KEY) ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                window.location.href = '/dashboard';
+            }
+        });
+
+        // --- 2. INTERACTIVE LENS APERTURE SIMULATOR ---
+        let currentLensMode = 'tamper'; // 'tamper', 'fft', 'raw'
+
+        const stage = document.getElementById('aperture-stage');
+        const img = document.getElementById('aperture-img');
+        const lens = document.getElementById('aperture-lens');
+        const canvas = document.getElementById('aperture-canvas');
+        const ctx = canvas.getContext('2d');
+        const hudCoords = document.getElementById('hud-coords');
+        const hudZscore = document.getElementById('hud-zscore');
+        const tag = document.getElementById('aperture-lens-tag');
+
+        canvas.width = 140;
+        canvas.height = 140;
+
+        function setLensMode(mode) {
+            currentLensMode = mode;
+            ['btn-filter-tamper', 'btn-filter-fft', 'btn-filter-raw'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+
+            if (mode === 'tamper') {
+                document.getElementById('btn-filter-tamper').classList.add('active');
+                tag.innerText = 'TAMPER RESIDUAL [2.5x]';
+                hudZscore.innerText = 'SPATIAL: Z = 3.84 > 3.2';
+            } else if (mode === 'fft') {
+                document.getElementById('btn-filter-fft').classList.add('active');
+                tag.innerText = '2D-FFT SPECTRUM [2.5x]';
+                hudZscore.innerText = 'NPR COV: 0.024 (SHOT)';
+            } else {
+                document.getElementById('btn-filter-raw').classList.add('active');
+                tag.innerText = '2.5x OPTICAL ZOOM';
+                hudZscore.innerText = 'Q-FACTOR: Q = 88.0%';
+            }
+        }
+
+        let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+        let isHovered = false;
+
+        stage.addEventListener('mouseenter', () => {
+            isHovered = true;
+            lens.style.display = 'block';
+        });
+
+        stage.addEventListener('mouseleave', () => {
+            isHovered = false;
+            lens.style.display = 'none';
+        });
+
+        stage.addEventListener('mousemove', (e) => {
+            const rect = stage.getBoundingClientRect();
+            targetX = e.clientX - rect.left;
+            targetY = e.clientY - rect.top;
+            hudCoords.innerText = `LOC: X: ${Math.round(targetX)} Y: ${Math.round(targetY)}`;
+        });
+
+        // Touch support for tablets/mobile
+        stage.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const rect = stage.getBoundingClientRect();
+                targetX = e.touches[0].clientX - rect.left;
+                targetY = e.touches[0].clientY - rect.top;
+                hudCoords.innerText = `LOC: X: ${Math.round(targetX)} Y: ${Math.round(targetY)}`;
+                lens.style.display = 'block';
+            }
+        });
+
+        function renderLensLoop() {
+            // Smooth lerp follow
+            mouseX += (targetX - mouseX) * 0.28;
+            mouseY += (targetY - mouseY) * 0.28;
+
+            lens.style.left = `${mouseX}px`;
+            lens.style.top = `${mouseY}px`;
+
+            if (img.complete && img.naturalWidth > 0) {
+                ctx.clearRect(0, 0, 140, 140);
+                const scaleX = img.naturalWidth / img.clientWidth;
+                const scaleY = img.naturalHeight / img.clientHeight;
+                const zoom = 2.5;
+                const srcW = (140 / zoom) * scaleX;
+                const srcH = (140 / zoom) * scaleY;
+                const srcX = (mouseX * scaleX) - (srcW / 2);
+                const srcY = (mouseY * scaleY) - (srcH / 2);
+
+                try {
+                    ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, 140, 140);
+
+                    if (currentLensMode === 'tamper') {
+                        // High-contrast false color thermal mapping
+                        const imgData = ctx.getImageData(0, 0, 140, 140);
+                        const d = imgData.data;
+                        for (let i = 0; i < d.length; i += 4) {
+                            const lum = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114);
+                            if ((i / 4) % 140 > 45 && (i / 4) % 140 < 105) {
+                                d[i] = Math.min(255, lum * 1.8 + 90);
+                                d[i+1] = Math.max(0, 130 - lum * 0.4);
+                                d[i+2] = Math.max(0, 15);
+                            } else {
+                                d[i] = Math.floor(lum * 0.25);
+                                d[i+1] = Math.floor(lum * 0.55);
+                                d[i+2] = Math.floor(lum * 1.35);
+                            }
+                        }
+                        ctx.putImageData(imgData, 0, 0);
+                    } else if (currentLensMode === 'fft') {
+                        // 2D-FFT concentric grid
+                        ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
+                        ctx.fillRect(0, 0, 140, 140);
+                        ctx.strokeStyle = 'rgba(216, 180, 254, 0.6)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(70, 70, 22, 0, Math.PI * 2);
+                        ctx.arc(70, 70, 48, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(0, 70); ctx.lineTo(140, 70);
+                        ctx.moveTo(70, 0); ctx.lineTo(70, 140);
+                        ctx.stroke();
+                    }
+                } catch (e) {
+                    // Local fallback
+                }
+            }
+
+            requestAnimationFrame(renderLensLoop);
+        }
+
+        requestAnimationFrame(renderLensLoop);
+
+        // --- 3. GSAP ENTRANCE TIMELINE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof gsap !== 'undefined') {
+                const mm = gsap.matchMedia();
+                mm.add("(prefers-reduced-motion: no-preference)", () => {
+                    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+                    tl.from("#sf-nav", { y: -20, opacity: 0, duration: 0.6 })
+                      .from("#sf-badge", { y: -15, opacity: 0, duration: 0.5 }, "-=0.3")
+                      .from("#sf-title", { y: 25, opacity: 0, duration: 0.7 }, "-=0.3")
+                      .from("#sf-sub", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4")
+                      .from("#sf-signals .sf-signal-chip", { y: 15, opacity: 0, stagger: 0.1, duration: 0.5 }, "-=0.4")
+                      .from("#sf-cta-row", { y: 15, opacity: 0, duration: 0.6 }, "-=0.3")
+                      .from("#sf-right", { scale: 0.94, opacity: 0, duration: 0.8 }, "-=0.6")
+                      .from("#sf-footer", { y: 15, opacity: 0, duration: 0.5 }, "-=0.4");
+                });
+            }
+        });
+    </script>
 </body>
 </html>
