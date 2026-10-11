@@ -500,46 +500,4 @@ def test_dossier_4_page_structure():
     assert len(page_matches) == 4
 
 
-def test_analyze_dual_scores_and_telemetry(client):
-    """
-    Verify that /analyze returns dual independent scores (neural_ai_score and physical_sensor_score)
-    along with structured dual_telemetry and scores dictionary.
-    """
-    img_buf = create_test_image()
-    data = {'file': (img_buf, 'test_dual.jpg')}
-    response = client.post('/analyze', data=data, content_type='multipart/form-data')
-    assert response.status_code == 200
-    res_json = response.get_json()
-
-    assert "neural_ai_score" in res_json
-    assert "physical_sensor_score" in res_json
-    assert "scores" in res_json
-    assert "dual_telemetry" in res_json
-    assert "neural" in res_json
-
-    assert 0.0 <= res_json["neural_ai_score"] <= 100.0
-    assert 0.0 <= res_json["physical_sensor_score"] <= 100.0
-    assert "neural" in res_json["dual_telemetry"]
-    assert "physical" in res_json["dual_telemetry"]
-    assert "score" in res_json["dual_telemetry"]["neural"]
-    assert "score" in res_json["dual_telemetry"]["physical"]
-
-
-def test_dashboard_dual_meters_rendering(client):
-    """
-    Verify that dashboard.html contains the Dual-Signal Forensics Meter elements.
-    """
-    response = client.get('/dashboard')
-    assert response.status_code == 200
-    html = response.data.decode('utf-8')
-
-    assert 'id="meter-neural-val"' in html
-    assert 'id="meter-neural-fill"' in html
-    assert 'id="meter-physical-val"' in html
-    assert 'id="meter-physical-fill"' in html
-    assert 'id="meter-tamper-val"' in html
-    assert 'DEEP NEURAL ATTRIBUTION' in html
-    assert 'PHYSICAL SENSOR CONSISTENCY' in html
-
-
 

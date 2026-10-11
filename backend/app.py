@@ -35,7 +35,6 @@ try:
         extract_metadata,
         audit_c2pa_manifest,
         analyze_frequency_domain,
-        detect_neural_synthesis,
         perform_tamper_analysis,
         generate_ai_attribution_heatmap,
         arbitrate_forensic_evidence,
@@ -49,7 +48,6 @@ except ImportError:
         extract_metadata,
         audit_c2pa_manifest,
         analyze_frequency_domain,
-        detect_neural_synthesis,
         perform_tamper_analysis,
         generate_ai_attribution_heatmap,
         arbitrate_forensic_evidence,
@@ -210,12 +208,7 @@ def analyze():
         provenance_data = audit_c2pa_manifest(temp_evidence_path)
 
         # ---------------------------------------------------------
-        # BRANCH 2A: DEEP NEURAL ATTRIBUTION (ONNX CLASSIFIER)
-        # ---------------------------------------------------------
-        neural_data = detect_neural_synthesis(temp_evidence_path)
-
-        # ---------------------------------------------------------
-        # BRANCH 2B: FREQUENCY DOMAIN & PHYSICAL SENSOR SCREENING
+        # BRANCH 2: FREQUENCY DOMAIN & SPECTRAL AI SCREENING
         # ---------------------------------------------------------
         frequency_data = analyze_frequency_domain(temp_evidence_path)
 
@@ -240,14 +233,13 @@ def analyze():
         )
 
         # ---------------------------------------------------------
-        # MULTI-SIGNAL FORENSIC ARBITRATOR (DUAL-SIGNAL FUSION)
+        # MULTI-SIGNAL FORENSIC ARBITRATOR
         # ---------------------------------------------------------
         arbitration = arbitrate_forensic_evidence(
             provenance_data=provenance_data,
             frequency_data=frequency_data,
             tamper_data=tamper_data,
-            explainability_data=ai_explain_data,
-            neural_data=neural_data
+            explainability_data=ai_explain_data
         )
 
         # Generate persistent analysis record identifier
@@ -270,7 +262,6 @@ def analyze():
             "metadata": metadata,
             "provenance": provenance_data,
             "frequency": frequency_data,
-            "neural": neural_data,
             "tamper": {
                 "spatial_inconsistency": tamper_data["spatial_inconsistency"],
                 "laplacian_variance": tamper_data["laplacian_variance"],
@@ -293,10 +284,6 @@ def analyze():
             "ai_heatmap": ai_explain_data["ai_heatmap_b64"],
             "score": arbitration["composite_score"],
             "ai_score": arbitration["ai_score"],
-            "neural_ai_score": arbitration.get("neural_ai_score", arbitration["ai_score"]),
-            "physical_sensor_score": arbitration.get("physical_sensor_score", arbitration["ai_score"]),
-            "scores": arbitration.get("scores", {}),
-            "dual_telemetry": arbitration.get("dual_telemetry", {}),
             "tamper_score": arbitration["tamper_score"],
             "verdict": arbitration["verdict_label"],
             "verdict_badge": arbitration["verdict_badge"],
@@ -321,7 +308,6 @@ def analyze():
             "metadata": metadata,
             "provenance": provenance_data,
             "frequency": frequency_data,
-            "neural": neural_data,
             "tamper": {
                 "spatial_inconsistency": tamper_data["spatial_inconsistency"],
                 "laplacian_variance": tamper_data["laplacian_variance"],
@@ -344,10 +330,6 @@ def analyze():
             "ai_heatmap": ai_explain_data["ai_heatmap_b64"],
             "score": arbitration["composite_score"],
             "ai_score": arbitration["ai_score"],
-            "neural_ai_score": arbitration.get("neural_ai_score", arbitration["ai_score"]),
-            "physical_sensor_score": arbitration.get("physical_sensor_score", arbitration["ai_score"]),
-            "scores": arbitration.get("scores", {}),
-            "dual_telemetry": arbitration.get("dual_telemetry", {}),
             "tamper_score": arbitration["tamper_score"],
             "verdict": arbitration["verdict_label"],
             "verdict_badge": arbitration["verdict_badge"],
