@@ -8,7 +8,8 @@ venv/
 .gitignore
 uploads/*
 !uploads/.gitkeep
-archive
+docs/archive
 graphify-out
-.agents
 planning-with-files/
+.coverage
+.pytest_cache/

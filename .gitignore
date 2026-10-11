@@ -1,31 +1,35 @@
-# Python
+# Python & Virtual Environments
 venv/
+.venv/
+env/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
-# Project Specific
+# Testing & Coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Uploads & Temporary Assets
 uploads/*
 !uploads/.gitkeep
 frontend/static/uploads/*
 
-# System
+# OS & Editor Files
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
-# Large Model files (if any)
+# Large Model weights (if any)
 models/*.h5
 models/*.keras
+models/*.pt
+models/*.onnx
 
-# things that is added after the git clone which is git ignored
+# Agent & Local Planning Frameworks
 .agents
-archive
-uploads
 graphify-out
 planning-with-files/
-.coverage
-scratch_test_assets/
-frontend_backup/
-frontend_backup_v2/
-frontend_backup_interactive_buttons/
-
-
