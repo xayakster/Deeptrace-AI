@@ -28,7 +28,7 @@ def calculate_hashes(file_bytes: bytes) -> Tuple[str, str]:
     Computes cryptographic fingerprints for digital evidence chain of custody.
     Returns (MD5, SHA-256) as lowercase hex strings.
     """
-    md5 = hashlib.md5(file_bytes).hexdigest()
+    md5 = hashlib.md5(file_bytes, usedforsecurity=False).hexdigest()  # nosec B324
     sha256 = hashlib.sha256(file_bytes).hexdigest()
     return md5, sha256
 

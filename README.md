@@ -1,25 +1,28 @@
-# 🧠 DeepTrace AI v2.0
-### Calibrated Digital Media Forensics & Source Tracking System
+# 🧠 DeepTrace AI v2.5
+### Tri-Branch Calibrated Digital Media Forensics & Source Tracking System
 
-DeepTrace AI is a professional-grade digital image forensics workstation engineered to detect digital image manipulation, analyze compression physics, identify generative AI synthesis artifacts, and preserve evidentiary integrity.
+DeepTrace AI is a court-defensible digital image forensics workstation engineered to detect digital image manipulation, analyze compression physics, identify generative AI synthesis artifacts, extract hardware provenance, and generate accredited forensic examination dossiers.
 
 ---
 
 ## 🚀 Key Features
 
-- **Multi-Factor Error Level Analysis (ELA):** Analyzes discrete cosine transform (DCT) re-compression deltas to reveal non-uniform quantization footprints.
-- **Laplacian Texture Noise Variance ($\sigma^2_{\text{Lap}}$):** High-frequency optical sensor shot noise estimation to distinguish physical camera captures ($\ge 115.0$) from synthetic AI diffusion/GAN denoiser artifacts ($< 45.0$).
-- **2D Block-Level Spatial Inconsistency Index ($S_{\text{incon}}$):** Decomposes ELA residuals into a $32 \times 32$ pixel grid, calculating spatial $Z$-scores to detect localized copy-move, splicing, and inpainting anomalies ($Z > 3.2$).
-- **Calibrated Three-Tier Verdict Model:** Grounded in CASIA v2.0 and Columbia benchmark datasets:
-  - 🟢 **AUTHENTIC / NATURAL** ($0.0\% - 35.0\%$): Uniform compression, natural optical sensor noise, no localized anomalies.
-  - 🟡 **INCONCLUSIVE / RESAVED** ($35.1\% - 65.0\%$): Moderate compression variance typical of benign social media transcoding or multi-resaves.
-  - 🔴 **TAMPERED / AI GENERATED** ($65.1\% - 100.0\%$): Strong localized spatial $Z$-score outliers or verified synthetic noise signatures.
-- **Cryptographic Chain of Custody:** Concurrently computes MD5 and SHA-256 cryptographic digests on raw uploaded bytes.
-- **EXIF Metadata Intelligence:** Extracts camera hardware, lens configuration, and software creation history without biased score discounting.
-- **Thread-Safe Architecture:** Isolated per-request scratch directories preventing file collisions during concurrent uploads, with guaranteed cleanup.
-- **Automated Forensic PDF Export:** Generates court-ready PDF investigative reports with cryptographic hashes, quantitative telemetry, and interpretation summaries.
-- **OSINT Intelligence Bridges:** Direct integration links for TinEye reverse image search and Google Lens.
-- **Cinematic Cyberpunk UI:** Custom HUD terminal with CRT scanlines, neon gauge telemetry, and side-by-side ELA contrast comparison canvas.
+- **Tri-Branch Forensic Analysis Engine:**
+  - **Branch 1 (Provenance & Hardware Cryptography):** Computes RFC 1321 MD5, FIPS 180-4 SHA-256, and 64-bit perceptual dHash digests; parses embedded EXIF sensor/camera metadata; validates cryptographic C2PA Content Credentials manifests.
+  - **Branch 2 (Frequency Domain & Structural Screening):** Applies 2D Fast Fourier Transform (2D-FFT) with azimuthal power spectrum integration to detect synthetic lattice peaks; analyzes Neighboring Pixel Relationships (NPR) lag-2 structural covariance for diffusion upsampling traces.
+  - **Branch 3 (Spatial Tampering & Photoshop Localization):** Multiscale Error Level Analysis (ELA) with DCT quantization table quality estimation ($Q$ baseline); TruFor-inspired gradient texture reliability weighting; $32 \times 32$ spatial $Z$-score anomaly mapping.
+- **Continuous Sigmoid Arbitration & 95% Conformal Prediction:** Fuses multi-branch evidence into calibrated suspicion scores with Platt temperature scaling and statistical guarantees (95% marginal coverage confidence sets).
+- **Court-Defensible 4-Page Forensic Dossier:** Compiles publication-grade PDF dossiers adhering to **SWGDE 18-Q-002**, **ISO/IEC 27037:2012**, **ENFSI** Bayesian Likelihood Ratio ($LR$) verbal scales, and **ASTM E3079**:
+  - *Page 1:* Executive Forensic Brief, Chain of Custody, Cryptographic Hashes, C2PA Audit, Verdict Banner, Conformal Guarantee, and Prioritized Actionable Takeaways.
+  - *Page 2:* 7-Row Quantitative Telemetry Matrix, Camera Hardware & EXIF Table, and Physical/Generative Mechanism Interpretability (Daubert/Frye compliance).
+  - *Page 3:* 4-Quadrant Comparative Evidence Gallery (Exhibit A: Original Evidence, Exhibit B: ELA Residual, Exhibit C: Spatial Tamper Heatmap, Exhibit D: Neural AI Attribution Heatmap) with calibrated false-color legends.
+  - *Page 4:* SOP Analytical Pipeline, Tool Specifications, Standards Declarations, Evidentiary Notice, Examiner Certification, and Cryptographic SHA-256 Seal.
+- **Server-Side Anti-Tampering (`AnalysisRecordCache`):** Thread-safe LRU cache cryptographically binding examination state to unique `analysis_id` tokens, preventing client-side payload tampering while preserving legacy compatibility.
+- **Dashboard V3 Workstation:**
+  - Magnetic Drop Zone with spring-lerp proximity physics and strict 15 MB file size validation.
+  - Dual Comparison Workspace with interactive Before/After Split Curtain Slider (`#curtain-handle`).
+  - 1.6-second Hold-to-Confirm export button (`#btn-hold-export`) preventing accidental concurrent exports.
+- **Single-Frame Landing Page:** 100vh non-scrolling editorial presentation featuring an interactive canvas optical forensic lens simulator with real-time false-color overlays and filter switching.
 
 ---
 
@@ -29,10 +32,11 @@ DeepTrace AI is a professional-grade digital image forensics workstation enginee
 |---|---|
 | **Backend Framework** | Python 3.11+ / Flask 3.x |
 | **Image Processing & Math** | OpenCV (`opencv-python-headless`), Pillow (PIL), NumPy |
-| **Forensic PDF Engine** | FPDF2 |
-| **Testing & Quality** | Pytest, Pytest-Cov (24 tests, 95% statement coverage) |
-| **Code Intelligence** | Graphify AST Knowledge Graph |
-| **Frontend UI** | HTML5, Vanilla CSS3 (Custom Cyberpunk HUD), Modern JavaScript (ES6) |
+| **Forensic PDF Engine** | FPDF2 2.8.9 (In-memory `io.BytesIO` streaming) |
+| **Testing & Quality** | Pytest, Pytest-Cov (53 tests, 88% overall statement coverage, 100% pass rate) |
+| **Code Intelligence** | Graphify AST Knowledge Graph (181 nodes, 198 edges) |
+| **Security Scanning** | Bandit (AST security scanning, 0 High / 0 Medium vulnerabilities) |
+| **Frontend UI** | HTML5, Vanilla CSS3 (Obsidian Dark Studio), Modern JavaScript (ES6) |
 
 ---
 
@@ -40,24 +44,18 @@ DeepTrace AI is a professional-grade digital image forensics workstation enginee
 
 ```
 DeepTrace-AI/
-├── app.py                            # Flask server, API routes, and calibrated forensic scoring engine
+├── app.py                            # Flask server, API routes, LRU cache, and forensic arbitrator
 ├── requirements.txt                  # Python dependency manifest
 ├── README.md                         # Project documentation and architectural guide
 ├── forensics/                        # Modular Tri-Branch Forensic Engine
-│   ├── provenance.py                 # Branch 1: Cryptographic hashes, metadata, C2PA audit
+│   ├── provenance.py                 # Branch 1: Hashes, EXIF metadata, C2PA manifest audit
 │   ├── frequency.py                  # Branch 2: 2D-FFT azimuthal power spectrum & NPR covariance
 │   ├── tampering.py                  # Branch 3: Adaptive ELA, multiscale anomaly grid & TruFor reliability
 │   ├── explainability.py             # Spatial AI attribution heatmaps and synthesis localization
-│   └── arbitrator.py                 # Multi-signal fusion, Platt scaling & 95% Conformal Prediction
-├── reports/                          # Comprehensive technical and scientific research reports
-│   ├── README.md                     # Reports index and architectural summaries
-│   ├── DeepTrace_AI_Accuracy_Consistency_Reliability_Report.md
-│   ├── DeepTrace_AI_Detection_and_Manipulation_Investigation_Report.md
-│   ├── DeepTrace_AI_GradCAM_Feasibility_Study.md
-│   └── DeepTrace_AI_Technical_Report.md
+│   ├── arbitrator.py                 # Multi-signal fusion, Platt scaling & 95% Conformal Prediction
+│   ├── dossier.py                    # 4-Page Court-Defensible Forensic Dossier compiler (SWGDE/ISO/ENFSI)
+│   └── __init__.py                   # Package exports and public API
 ├── test_images/                      # Curated benchmark & evaluation image dataset
-│   ├── README.md                     # Dataset documentation & expected forensic metrics
-│   ├── eval_dataset.py               # Automated dataset verification runner
 │   ├── real_images/                  # Authentic optical camera captures with photon shot noise
 │   ├── edited_images/                # Photoshop spliced, copy-moved, and manipulated images
 │   └── ai_generated_images/          # Generative diffusion & neural upsampled synthetic media
@@ -65,15 +63,15 @@ DeepTrace-AI/
 ├── graphify-out/                     # Codebase AST knowledge graph and visualizer
 ├── frontend/
 │   ├── templates/
-│   │   ├── index.html                # Entry portal with animated biometric scanner HUD
-│   │   └── dashboard.html            # Main forensic laboratory workstation
+│   │   ├── index.html                # Single-frame landing page with interactive forensic lens
+│   │   └── dashboard.html            # Dashboard V3 workstation (split curtain, magnetic dropzone)
 │   └── static/
-│       ├── css/style.css             # Cyberpunk neon styling, CRT scanlines, custom cursor
-│       ├── js/main.js                # Cursor physics, live clock, and logging utilities
-│       └── images/                   # UI backdrop and scanner overlays
+│       ├── css/style.css             # Obsidian Studio styling, HUD tokens, responsive layouts
+│       ├── js/main.js                # Core frontend utilities
+│       └── images/                   # Sample evidence assets and UI icons
 └── tests/
-    ├── test_forensics.py             # Unit tests for hashing, metadata, ELA, Laplacian, block Z-score
-    └── test_api.py                   # Integration tests for routes, upload validation, security, and PDF
+    ├── test_forensics.py             # Unit tests for hashing, metadata, ELA, Laplacian, 2D-FFT, NPR
+    └── test_api.py                   # Integration tests for routes, upload limits, cache, and 4-page PDF
 ```
 
 ---
@@ -87,8 +85,8 @@ DeepTrace-AI/
 ### Steps
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Sreya-Shyjash/DeepTrace-AI.git
-   cd DeepTrace-AI
+   git clone https://github.com/xayakster/Deeptrace-AI.git
+   cd Deeptrace-AI
    ```
 
 2. **Install dependencies:**
@@ -115,12 +113,12 @@ DeepTrace AI includes a comprehensive automated test suite verifying algorithmic
 python -m pytest -v
 
 # Run tests with statement coverage report
-python -m pytest --cov=app --cov-report=term-missing tests/
+python -m pytest --cov=app --cov=forensics --cov-report=term-missing tests/
 ```
 
 **Test Suite Coverage Summary:**
-- **24 automated tests** covering core forensics, API routes, security boundaries, and edge cases.
-- **95% statement coverage** across `app.py`.
+- **53 automated tests** covering core forensics, API routes, security boundaries, and edge cases.
+- **88% overall statement coverage** (96% on `dossier.py`, 97% on `arbitrator.py`, 90% on `app.py`).
 - **100% pass rate**.
 
 ---
